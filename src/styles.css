@@ -161,7 +161,7 @@ h1, h2, h3 { color: var(--ink); font-weight: 800; letter-spacing: -.035em; }
 .stat__content { min-width: 0; display: grid; gap: 5px; }
 .stat__name { color: var(--muted); font-size: 9px; font-weight: 750; text-transform: uppercase; letter-spacing: .09em; }
 .stat strong { overflow: hidden; color: var(--ink); font-size: 21px; line-height: 1.08; letter-spacing: -.045em; text-overflow: ellipsis; white-space: nowrap; }
-.stat strong::first-letter { color: var(--stat-color); }
+.identity-card .stat strong::first-letter { color: inherit; }
 .stat small { overflow: hidden; color: var(--muted); font-size: 8px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .portfolio-metric > span, .score-bar__copy span, .insight-card > span { color: var(--muted); font-size: 9px; line-height: 1.3; font-weight: 650; letter-spacing: .01em; }
 
@@ -395,6 +395,53 @@ h1, h2, h3 { color: var(--ink); font-weight: 800; letter-spacing: -.035em; }
 .bottom-nav button.active { color: var(--ink); }
 .bottom-nav button.active > span { background: linear-gradient(145deg, var(--primary), var(--secondary)); box-shadow: 0 5px 18px rgba(44,122,123,.3), inset 0 1px 0 rgba(255,255,255,.4); }
 
+/* Readability scale */
+.eyebrow, .header .eyebrow { font-size: 12px; }
+.global-search input { font-size: 14px; }
+.global-search kbd, .wallet-pill__copy small { font-size: 10px; }
+.demo-wallets > span, .demo-wallets button { font-size: 10px; }
+.demo-wallets button { padding: 7px 10px; }
+.wallet-pill__copy strong { font-size: 12px; }
+.pill, .identity-card .pill--verified { font-size: 11px; }
+.stat__name { font-size: 11px; }
+.stat strong { font-size: 24px; }
+.stat small { font-size: 10px; white-space: normal; }
+.portfolio-metric > span, .score-bar__copy span, .insight-card > span { font-size: 11px; }
+.personality-card__eyebrow, .personality-card__intro p { font-size: 12px; }
+.personality-orbit span { font-size: 9px; }
+.ai-card__heading span { font-size: 12px; }
+.ai-card__confidence { padding: 7px 11px; font-size: 10px; }
+.ai-insight strong { font-size: 14px; }
+.ai-insight span, .ai-insight--highlighted::after { font-size: 10px; }
+.balance-rank-chip, .growth-pill { font-size: 12px; }
+.balance-stat { padding: 13px; }
+.balance-stat__icon { width: 34px; height: 34px; }
+.balance-stat > span:not(.balance-stat__icon) { font-size: 9px; }
+.balance-stat strong { font-size: 13px; }
+.portfolio-card__heading span, .portfolio-metric > span:not(.portfolio-metric__icon) { font-size: 10px; }
+.portfolio-metric small { font-size: 10px; }
+.portfolio-metric strong { font-size: 23px; }
+.score-bar__copy span { font-size: 9px; }
+.score-bar__copy strong { font-size: 13px; }
+.score-bar__value small { font-size: 11px; }
+.summary__heading span, .flow-card h3, .section-label button { font-size: 13px; }
+.flow-card__top span { font-size: 10px; }
+.breakdown-section__heading span, .category-card span, .spending-card__chart > span, .donut span, .spending-card__content > span { font-size: 11px; }
+.category-card strong { font-size: 13px; }
+.category-card > div:nth-child(2) strong { font-size: 17px; }
+.breakdown__icon { width: 36px; height: 36px; }
+.breakdown__copy span { font-size: 11px; }
+.breakdown__copy small { font-size: 9px; }
+.activity-card__heading span { font-size: 9px; }
+.activity-card__heading button { padding: 8px 12px; font-size: 10px; }
+.transaction { padding: 13px 11px; }
+.transaction__visual .icon-box, .highlight-item__icon { width: 40px; height: 40px; }
+.transaction__main strong, .transaction__amount strong, .highlight-item strong { font-size: 13px; }
+.transaction__context, .transaction__time, .transaction__amount span, .highlight-item span, .highlight-item small { font-size: 10px; }
+.chain-badge { padding: 4px 7px; font-size: 9px; }
+.bottom-nav button { font-size: 11px; }
+.bottom-nav button > span { width: 40px; height: 40px; }
+
 html[data-theme="dark"] body { background: radial-gradient(circle at 50% -16%, rgba(32,211,204,.11), transparent 30%), #0b0f14; }
 html[data-theme="dark"] .header { border-color: var(--border); background: rgba(17,24,39,.82); box-shadow: 0 12px 38px rgba(0,0,0,.3); }
 html[data-theme="dark"] .profile h1,
@@ -617,4 +664,26 @@ html[data-theme="dark"] .bottom-nav button.active > span { box-shadow: 0 0 22px 
   .bottom-nav { bottom: 0; width: 100%; padding: 6px 6px max(6px, env(safe-area-inset-bottom)); }
   .bottom-nav button { min-height: 46px; }
   .bottom-nav button > span { width: 32px; height: 32px; }
+}
+
+@media (max-width: 700px) {
+  .profile h1 { font-size: 18px; }
+  .eyebrow, .header .eyebrow { font-size: 11px; }
+  .global-search input { font-size: 13px; }
+  .demo-wallets > span, .demo-wallets button { font-size: 10px; }
+  .card-heading h2, .activity-card__heading h2 { font-size: 16px; }
+  .stat strong { font-size: 21px; }
+  .stat__name { font-size: 10px; }
+  .stat small { font-size: 10px; }
+  .portfolio-grid { grid-template-columns: 1fr; }
+  .portfolio-metric { min-height: 112px; }
+  .balance-stat > span:not(.balance-stat__icon) { font-size: 9px; }
+  .balance-stat strong { font-size: 12px; }
+  .transaction { grid-template-columns: auto minmax(0, 1fr); }
+  .transaction__amount { grid-column: 2; justify-items: start; text-align: left; }
+  .transaction__time { grid-column: 2; text-align: left; }
+  .transaction__main strong, .transaction__amount strong, .highlight-item strong { font-size: 13px; }
+  .transaction__context, .transaction__time, .transaction__amount span, .highlight-item span, .highlight-item small { font-size: 10px; }
+  .bottom-nav button { min-height: 54px; font-size: 10px; }
+  .bottom-nav button > span { width: 38px; height: 38px; }
 }
