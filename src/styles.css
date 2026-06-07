@@ -624,7 +624,6 @@ html[data-theme="dark"] .bottom-nav button.active > span { box-shadow: 0 0 22px 
   .profile__image { width: 42px; height: 42px; }
   .icon-button { @apply size-10; }
   .header__actions { @apply gap-[5px]; }
-  .header__actions .icon-button:nth-child(2) { display: none; }
   .wallet-pill { @apply size-10 min-w-10; }
   .global-search { @apply h-11 pl-3; }
   .global-search kbd { display: none; }
