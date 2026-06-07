@@ -6,7 +6,7 @@ await Moralis.start({
   apiKey: process.env.MORALIS_API_KEY
 });
 
-export async function getWalletProfile(address) {
+export async function getWalletData(address) {
 
   const [
     netWorth,
