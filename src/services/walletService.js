@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || ''
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mywallet360.onrender.com'
 const DEFAULT_AVATAR = 'cebc058af93e566c96200932c258f395cbf87ebd.png'
 const EXAMPLE_WALLETS = [
   { label: 'Wallet 1', address: '0xbf03a2440bf80f7726ba5f60f0ac260ccad82a0b' },
