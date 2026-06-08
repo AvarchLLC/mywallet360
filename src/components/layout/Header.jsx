@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import { Bell, ChevronDown, Moon, Search, Sun, WalletCards } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Bell, BellRing, CheckCircle2, ChevronDown, Moon, Search, Sun, WalletCards, X } from 'lucide-react'
 
 const compactAddress = (address) => `${address.slice(0, 6)}...${address.slice(-4)}`
 
@@ -16,6 +16,11 @@ export function Header({
   onToggleTheme,
 }) {
   const searchInputRef = useRef(null)
+  const notificationRef = useRef(null)
+  const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false)
+  const [notificationPermission, setNotificationPermission] = useState(() => (
+    'Notification' in window ? Notification.permission : 'unsupported'
+  ))
 
   useEffect(() => {
     const handleSearchShortcut = (event) => {
@@ -29,11 +34,67 @@ export function Header({
         onSearchChange('')
         searchInputRef.current.blur()
       }
+
+      if (event.key === 'Escape') {
+        setIsNotificationPanelOpen(false)
+      }
+    }
+
+    const handleOutsideClick = (event) => {
+      if (!notificationRef.current?.contains(event.target)) {
+        setIsNotificationPanelOpen(false)
+      }
     }
 
     window.addEventListener('keydown', handleSearchShortcut)
-    return () => window.removeEventListener('keydown', handleSearchShortcut)
+    document.addEventListener('pointerdown', handleOutsideClick)
+
+    return () => {
+      window.removeEventListener('keydown', handleSearchShortcut)
+      document.removeEventListener('pointerdown', handleOutsideClick)
+    }
   }, [onSearchChange])
+
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) return
+
+    try {
+      const permission = await Notification.requestPermission()
+      setNotificationPermission(permission)
+
+      if (permission === 'granted') {
+        try {
+          new Notification('Notifications enabled', {
+            body: 'MyWallet360 can now send browser notifications.',
+            icon: '/favicon.svg',
+          })
+        } catch {
+          // Some mobile browsers grant permission but require a service worker to display notifications.
+        }
+      }
+    } catch {
+      setNotificationPermission('unsupported')
+    }
+  }
+
+  const notificationContent = {
+    default: {
+      title: 'Enable notifications?',
+      description: 'Allow MyWallet360 to send browser notifications. You will receive a confirmation after enabling.',
+    },
+    granted: {
+      title: 'Notifications are enabled',
+      description: 'MyWallet360 has permission to send browser notifications.',
+    },
+    denied: {
+      title: 'Notifications are blocked',
+      description: 'Enable notifications from your browser site settings to receive alerts.',
+    },
+    unsupported: {
+      title: 'Notifications unavailable',
+      description: 'This browser does not support desktop notifications.',
+    },
+  }[notificationPermission]
 
   return (
     <header className="header">
@@ -108,10 +169,51 @@ export function Header({
       </div>
 
       <div className="header__actions">
-        <button className="icon-button" type="button" aria-label="View notifications">
-          <Bell aria-hidden="true" />
-          <span className="notification-dot" />
-        </button>
+        <div className="notification-control" ref={notificationRef}>
+          <button
+            className={`icon-button${isNotificationPanelOpen ? ' active' : ''}`}
+            type="button"
+            aria-label="Notification settings"
+            aria-expanded={isNotificationPanelOpen}
+            aria-controls="notification-permission-panel"
+            onClick={() => setIsNotificationPanelOpen((value) => !value)}
+          >
+            <Bell aria-hidden="true" />
+            {notificationPermission !== 'granted' && <span className="notification-dot" />}
+          </button>
+          {isNotificationPanelOpen && (
+            <aside
+              className="notification-panel"
+              id="notification-permission-panel"
+              role="dialog"
+              aria-labelledby="notification-panel-title"
+            >
+              <div className={`notification-panel__icon notification-panel__icon--${notificationPermission}`}>
+                {notificationPermission === 'granted'
+                  ? <CheckCircle2 aria-hidden="true" />
+                  : <BellRing aria-hidden="true" />}
+              </div>
+              <div className="notification-panel__copy">
+                <strong id="notification-panel-title">{notificationContent.title}</strong>
+                <p>{notificationContent.description}</p>
+              </div>
+              <button
+                className="notification-panel__close"
+                type="button"
+                aria-label="Close notification settings"
+                onClick={() => setIsNotificationPanelOpen(false)}
+              >
+                <X aria-hidden="true" />
+              </button>
+              {notificationPermission === 'default' && (
+                <div className="notification-panel__actions">
+                  <button type="button" onClick={requestNotificationPermission}>Allow notifications</button>
+                  <button type="button" onClick={() => setIsNotificationPanelOpen(false)}>Not now</button>
+                </div>
+              )}
+            </aside>
+          )}
+        </div>
         <button
           className="icon-button theme-toggle"
           type="button"
