@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Bell, Moon, Search, Sun, WalletCards } from 'lucide-react'
+import { ArrowUpRight, Bell, Moon, Search, Sun, WalletCards } from 'lucide-react'
 
 const compactAddress = (address) => `${address.slice(0, 6)}...${address.slice(-4)}`
 
@@ -78,7 +78,8 @@ export function Header({
                 title={`Analyze ${exampleWallet.address}`}
                 aria-label={`Analyze example address ${exampleWallet.address}`}
               >
-                {compactAddress(exampleWallet.address)}
+                <span>{compactAddress(exampleWallet.address)}</span>
+                <ArrowUpRight aria-hidden="true" />
               </button>
             ))}
           </div>
