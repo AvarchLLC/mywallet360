@@ -272,7 +272,7 @@ export function Header({
                   <p>
                     {connectedAddress
                       ? 'This account is connected and its analytics are loaded.'
-                      : 'Choose a browser wallet. You will approve the connection inside your wallet.'}
+                      : 'Choose a wallet, select an account, and approve access inside your wallet.'}
                   </p>
                 </div>
               </div>
@@ -310,7 +310,7 @@ export function Header({
                       </span>
                       <span>
                         <strong>{walletProvider.name}</strong>
-                        <small>{isConnecting ? 'Waiting for approval...' : 'Connect browser wallet'}</small>
+                        <small>{isConnecting ? 'Check your wallet to approve...' : 'Request connection permission'}</small>
                       </span>
                       <ChevronDown aria-hidden="true" />
                     </button>

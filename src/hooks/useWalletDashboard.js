@@ -91,19 +91,37 @@ export function useWalletDashboard() {
     setConnectionError('')
 
     try {
-      const accounts = await walletProvider.provider.request({ method: 'eth_requestAccounts' })
+      const provider = walletProvider.provider
+
+      try {
+        await provider.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }],
+        })
+      } catch (permissionError) {
+        const isUnsupported = permissionError.code === -32601 || permissionError.code === 4200
+
+        if (!isUnsupported) throw permissionError
+      }
+
+      const accounts = await provider.request({ method: 'eth_requestAccounts' })
       const address = accounts[0]
 
       if (!address) throw new Error('No wallet account was selected.')
 
-      setConnectedProvider(walletProvider.provider)
+      setConnectedProvider(provider)
       setConnectedAddress(address)
       setSearchValue(address)
       await analyzeWallet(address)
     } catch (requestError) {
-      const message = requestError.code === 4001
-        ? 'Connection request was cancelled.'
-        : requestError.message || 'Unable to connect wallet.'
+      let message = requestError.message || 'Unable to connect wallet.'
+
+      if (requestError.code === 4001) {
+        message = 'Connection permission was rejected.'
+      } else if (requestError.code === -32002) {
+        message = 'A wallet permission request is already open. Check your wallet extension.'
+      }
+
       setConnectionError(message)
     } finally {
       setIsConnecting(false)
