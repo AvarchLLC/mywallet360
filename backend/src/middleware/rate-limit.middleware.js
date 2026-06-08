@@ -8,9 +8,9 @@ function positiveInteger(value, fallback) {
 const walletWindowMs = positiveInteger(process.env.WALLET_RATE_LIMIT_WINDOW_MS, 60_000);
 const walletRequestLimit = positiveInteger(process.env.WALLET_RATE_LIMIT_MAX, 10);
 
-export const walletAnalysisRateLimit = rateLimit({
+const createRateLimit = ({ limit, code, message }) => rateLimit({
   windowMs: walletWindowMs,
-  limit: walletRequestLimit,
+  limit,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   handler: (req, res) => {
@@ -21,9 +21,21 @@ export const walletAnalysisRateLimit = rateLimit({
 
     res.status(429).json({
       success: false,
-      code: "WALLET_ANALYSIS_RATE_LIMITED",
-      message: "Too many wallet analysis requests. Please try again shortly.",
+      code,
+      message,
       retryAfterSeconds,
     });
   },
+});
+
+export const walletAnalysisRateLimit = createRateLimit({
+  limit: walletRequestLimit,
+  code: "WALLET_ANALYSIS_RATE_LIMITED",
+  message: "Too many wallet analysis requests. Please try again shortly.",
+});
+
+export const domainResolutionRateLimit = createRateLimit({
+  limit: positiveInteger(process.env.DOMAIN_RESOLUTION_RATE_LIMIT_MAX, 30),
+  code: "DOMAIN_RESOLUTION_RATE_LIMITED",
+  message: "Too many domain searches. Please try again shortly.",
 });

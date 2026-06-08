@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import resolutionRoutes from "./routes/resolution.routes.js";
 import walletRoutes from "./routes/wallet.routes.js";
 
 const app = express();
@@ -16,5 +17,6 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/wallet", walletRoutes);
+app.use("/api/resolve", resolutionRoutes);
 
 export default app;
