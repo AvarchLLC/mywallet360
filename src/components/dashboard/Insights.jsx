@@ -2,7 +2,7 @@ import { Icon } from '../common/Icon'
 
 export function Insights({ insights }) {
   return (
-    <section className="insights-grid">
+    <section id="dashboard-insights" className="insights-grid">
       {insights.map((insight, index) => (
         <article className="card insight-card" key={insight.label}>
           <span className={`icon-box ${index === 0 ? 'teal' : 'blue'}`}>
