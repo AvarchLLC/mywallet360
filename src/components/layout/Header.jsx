@@ -139,27 +139,29 @@ export function Header({
                     type="button"
                     onClick={() => onSelectExampleWallet(exampleWallet.address)}
                     aria-label={`Analyze ${exampleWallet.name}, ${exampleWallet.address}`}
-                    aria-describedby={previewId}
+                    aria-describedby={wallet ? undefined : previewId}
                   >
                     {compactAddress(exampleWallet.address)}
                   </button>
-                  <aside className="example-wallet-preview" id={previewId} role="tooltip">
-                    <div className="example-wallet-preview__heading">
-                      <span><WalletCards aria-hidden="true" /></span>
-                      <div>
-                        <small>{exampleWallet.type}</small>
-                        <strong>{exampleWallet.name}</strong>
+                  {!wallet && (
+                    <aside className="example-wallet-preview" id={previewId} role="tooltip">
+                      <div className="example-wallet-preview__heading">
+                        <span><WalletCards aria-hidden="true" /></span>
+                        <div>
+                          <small>{exampleWallet.type}</small>
+                          <strong>{exampleWallet.name}</strong>
+                        </div>
                       </div>
-                    </div>
-                    <p>{exampleWallet.description}</p>
-                    <code>{exampleWallet.address}</code>
-                    <div className="example-wallet-preview__details">
-                      <small>Analyze to view</small>
-                      <span>Balance</span>
-                      <span>Portfolio</span>
-                      <span>Activity</span>
-                    </div>
-                  </aside>
+                      <p>{exampleWallet.description}</p>
+                      <code>{exampleWallet.address}</code>
+                      <div className="example-wallet-preview__details">
+                        <small>Analyze to view</small>
+                        <span>Balance</span>
+                        <span>Portfolio</span>
+                        <span>Activity</span>
+                      </div>
+                    </aside>
+                  )}
                 </div>
               )
             })}
