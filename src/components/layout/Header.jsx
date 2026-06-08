@@ -99,11 +99,8 @@ export function Header({
   return (
     <header className="header">
       <div className="profile header__profile">
-        <div className="profile__image-wrap">
-          <span className="profile__placeholder profile__placeholder--brand">
-            <img src="/images/Vector.svg" alt="MyWallet360 logo" />
-          </span>
-          {wallet && <span className="profile__status" aria-label="Wallet loaded" />}
+        <div className="brand-mark">
+          <img src="/images/Vector.svg" alt="" />
         </div>
         <div className="profile__brand-copy">
           <h1>MyWallet360</h1>
