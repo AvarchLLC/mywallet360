@@ -21,6 +21,8 @@ export default function App() {
     error,
     searchValue,
     isLoading,
+    isResolving,
+    resolvedIdentifier,
     setSearchValue,
     searchWallet,
     selectExampleWallet,
@@ -41,8 +43,10 @@ export default function App() {
         onSearchChange={setSearchValue}
         onSearchSubmit={searchWallet}
         searchError={error}
+        resolvedIdentifier={resolvedIdentifier}
         onSelectExampleWallet={selectExampleWallet}
         isLoading={isLoading}
+        isResolving={isResolving}
         exampleWallets={exampleWallets}
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -75,8 +79,8 @@ export default function App() {
         <main className="wallet-empty-state">
           {isLoading && <DashboardLoader />}
           <span>Wallet analytics</span>
-          <h2>Enter a wallet address to begin</h2>
-          <p>No wallet data is loaded by default. Search an Ethereum address or choose an example wallet above.</p>
+          <h2>Enter a wallet address or ENS name</h2>
+          <p>Search an Ethereum address or .eth name to load its on-chain analytics.</p>
         </main>
       )}
     </div>

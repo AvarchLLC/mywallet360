@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { walletService } from '../services/walletService'
+import { resolveWalletIdentifier } from '../utils/resolveWalletIdentifier'
 
 export function useWalletDashboard() {
   const [wallet, setWallet] = useState(null)
   const [searchValue, setSearchValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isResolving, setIsResolving] = useState(false)
+  const [resolvedIdentifier, setResolvedIdentifier] = useState(null)
   const [error, setError] = useState('')
   const [connectedAddress, setConnectedAddress] = useState('')
   const [connectedProvider, setConnectedProvider] = useState(null)
@@ -13,26 +16,36 @@ export function useWalletDashboard() {
   const [connectionError, setConnectionError] = useState('')
   const isLoadingRef = useRef(false)
 
-  const analyzeWallet = useCallback(async (address) => {
+  const analyzeWallet = useCallback(async (identifier) => {
     if (isLoadingRef.current) return
 
     isLoadingRef.current = true
-    setIsLoading(true)
+    setIsResolving(true)
     setError('')
 
     try {
-      const nextWallet = await walletService.getWalletByAddress(address)
+      const resolution = await resolveWalletIdentifier(identifier)
+      setResolvedIdentifier(resolution)
+      setIsResolving(false)
+      setIsLoading(true)
+
+      const nextWallet = await walletService.getWalletByAddress(resolution.address)
       setWallet(nextWallet)
-      setSearchValue(nextWallet.id)
     } catch (requestError) {
       setError(requestError.message)
     } finally {
       isLoadingRef.current = false
+      setIsResolving(false)
       setIsLoading(false)
     }
   }, [])
 
   const searchWallet = () => analyzeWallet(searchValue)
+  const updateSearchValue = (value) => {
+    setSearchValue(value)
+    setError('')
+    setResolvedIdentifier(null)
+  }
   const selectExampleWallet = (address) => {
     setSearchValue(address)
     analyzeWallet(address)
@@ -139,7 +152,9 @@ export function useWalletDashboard() {
     wallet,
     searchValue,
     isLoading,
-    setSearchValue,
+    isResolving,
+    resolvedIdentifier,
+    setSearchValue: updateSearchValue,
     searchWallet,
     selectExampleWallet,
     connectedAddress,

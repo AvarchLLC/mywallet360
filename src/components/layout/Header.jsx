@@ -9,8 +9,10 @@ export function Header({
   onSearchChange,
   onSearchSubmit,
   searchError,
+  resolvedIdentifier,
   onSelectExampleWallet,
   isLoading,
+  isResolving,
   exampleWallets,
   theme,
   onToggleTheme,
@@ -111,6 +113,7 @@ export function Header({
   const hasMetaMask = walletProviders.some((walletProvider) => (
     walletProvider.provider.isMetaMask || walletProvider.rdns.includes('metamask')
   ))
+  const isSearchBusy = isLoading || isResolving
 
   return (
     <header className="header">
@@ -135,12 +138,22 @@ export function Header({
             value={searchValue}
             onChange={(event) => onSearchChange(event.target.value)}
             type="search"
-            placeholder="Enter Ethereum wallet address..."
-            aria-label="Ethereum wallet address"
+            placeholder="Enter Ethereum address or ENS name..."
+            aria-label="Ethereum wallet address or ENS name"
           />
-          <button disabled={isLoading} type="submit">Analyze</button>
+          <button disabled={isSearchBusy} type="submit">
+            {isResolving ? 'Resolving...' : isLoading ? 'Analyzing...' : 'Analyze'}
+          </button>
         </form>
         {searchError && <span className="wallet-search-error" role="alert">{searchError}</span>}
+        {resolvedIdentifier?.type === 'ens' && !searchError && (
+          <div className="wallet-resolution" aria-live="polite">
+            <span>ENS</span>
+            <strong title={resolvedIdentifier.originalInput}>{resolvedIdentifier.originalInput}</strong>
+            <span aria-hidden="true">resolves to</span>
+            <code title={resolvedIdentifier.address}>{compactAddress(resolvedIdentifier.address)}</code>
+          </div>
+        )}
         <div className="example-wallets">
           <span>Try an example</span>
           <div>
@@ -151,7 +164,7 @@ export function Header({
                 <div className="example-wallet" key={exampleWallet.address}>
                   <button
                     className={wallet?.id === exampleWallet.address ? 'active' : ''}
-                    disabled={isLoading}
+                    disabled={isSearchBusy}
                     type="button"
                     onClick={() => onSelectExampleWallet(exampleWallet.address)}
                     aria-label={`Analyze ${exampleWallet.name}, ${exampleWallet.address}`}

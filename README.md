@@ -16,3 +16,6 @@ npm run lint
 npm run build
 npm run preview
 ```
+
+Wallet search accepts Ethereum addresses and ENS `.eth` names. ENS names are
+resolved before the existing wallet analytics request runs.
