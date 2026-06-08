@@ -63,8 +63,8 @@ export default function App() {
         <main className="wallet-empty-state">
           {isLoading && <DashboardLoader />}
           <span>Wallet analytics</span>
-          <h2>Enter a wallet address to begin</h2>
-          <p>No wallet data is loaded by default. Search an Ethereum address or choose an example wallet above.</p>
+          <h2>Analyze any Ethereum address</h2>
+          <p>Paste an address in the search bar or choose an example address above to explore its activity.</p>
         </main>
       )}
     </div>

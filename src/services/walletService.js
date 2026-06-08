@@ -1,9 +1,9 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 const DEFAULT_AVATAR = 'cebc058af93e566c96200932c258f395cbf87ebd.png'
 const EXAMPLE_WALLETS = [
-  { label: 'Wallet 1', address: '0xbf03a2440bf80f7726ba5f60f0ac260ccad82a0b' },
-  { label: 'Wallet 2', address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' },
-  { label: 'Wallet 3', address: '0x28c6c06298d514db089934071355e5743bf21d60' },
+  { address: '0xbf03a2440bf80f7726ba5f60f0ac260ccad82a0b' },
+  { address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' },
+  { address: '0x28c6c06298d514db089934071355e5743bf21d60' },
 ]
 
 const compactAddress = (address) => `${address.slice(0, 6)}...${address.slice(-4)}`

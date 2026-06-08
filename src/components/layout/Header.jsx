@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { Bell, ChevronDown, Moon, Search, Sun, WalletCards } from 'lucide-react'
+import { Bell, Moon, Search, Sun, WalletCards } from 'lucide-react'
+
+const compactAddress = (address) => `${address.slice(0, 6)}...${address.slice(-4)}`
 
 export function Header({
   wallet,
@@ -57,14 +59,14 @@ export function Header({
             value={searchValue}
             onChange={(event) => onSearchChange(event.target.value)}
             type="search"
-            placeholder="Enter Ethereum wallet address..."
+            placeholder="Paste an Ethereum address (0x...)"
             aria-label="Ethereum wallet address"
           />
-          <button disabled={isLoading} type="submit">Analyze</button>
+          <button disabled={isLoading} type="submit">{isLoading ? 'Loading...' : 'View analytics'}</button>
         </form>
         {searchError && <span className="wallet-search-error" role="alert">{searchError}</span>}
         <div className="example-wallets">
-          <span>Example Wallets</span>
+          <span>Or try an example</span>
           <div>
             {exampleWallets.map((exampleWallet) => (
               <button
@@ -73,8 +75,10 @@ export function Header({
                 type="button"
                 onClick={() => onSelectExampleWallet(exampleWallet.address)}
                 key={exampleWallet.address}
+                title={`Analyze ${exampleWallet.address}`}
+                aria-label={`Analyze example address ${exampleWallet.address}`}
               >
-                {exampleWallet.label}
+                {compactAddress(exampleWallet.address)}
               </button>
             ))}
           </div>
@@ -95,14 +99,13 @@ export function Header({
         >
           {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
         </button>
-        <button className="wallet-pill" type="button" aria-label={wallet ? `Connected wallet ${wallet.profile.wallet}` : 'No wallet loaded'}>
+        <div className="wallet-pill" role="status" aria-live="polite">
           <span className="wallet-pill__dot" />
           <span className="wallet-pill__copy">
-            <strong>{wallet ? 'Connected' : 'No wallet'}</strong>
-            <small>{wallet ? wallet.profile.wallet : 'Enter address'}</small>
+            <strong>{wallet ? 'Address analyzed' : 'No address selected'}</strong>
+            <small>{wallet ? wallet.profile.wallet : 'Search or try an example'}</small>
           </span>
-          <ChevronDown aria-hidden="true" />
-        </button>
+        </div>
       </div>
     </header>
   )
