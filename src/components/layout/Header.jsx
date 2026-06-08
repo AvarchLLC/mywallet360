@@ -116,10 +116,10 @@ export function Header({
     <header className="header">
       <div className="profile header__profile">
         <div className="brand-mark">
-          <img src="/images/Vector.svg" alt="" />
+          <img src="/images/darklogo.svg" alt="" />
         </div>
         <div className="profile__brand-copy">
-          <h1>MyWallet360</h1>
+          <h1><span>MyWallet</span><span className="brand-360">360</span></h1>
           <span className="profile__tagline">Understands every txn.</span>
         </div>
       </div>
