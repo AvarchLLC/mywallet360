@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Bell, Moon, Search, Sun, WalletCards } from 'lucide-react'
+import { Bell, ChevronDown, Moon, Search, Sun, WalletCards } from 'lucide-react'
 
 const compactAddress = (address) => `${address.slice(0, 6)}...${address.slice(-4)}`
 
@@ -59,28 +59,50 @@ export function Header({
             value={searchValue}
             onChange={(event) => onSearchChange(event.target.value)}
             type="search"
-            placeholder="Paste an Ethereum address (0x...)"
+            placeholder="Enter Ethereum wallet address..."
             aria-label="Ethereum wallet address"
           />
-          <button disabled={isLoading} type="submit">{isLoading ? 'Loading...' : 'View analytics'}</button>
+          <button disabled={isLoading} type="submit">Analyze</button>
         </form>
         {searchError && <span className="wallet-search-error" role="alert">{searchError}</span>}
         <div className="example-wallets">
-          <span>Or try an example</span>
+          <span>Try an example</span>
           <div>
-            {exampleWallets.map((exampleWallet) => (
-              <button
-                className={wallet?.id === exampleWallet.address ? 'active' : ''}
-                disabled={isLoading}
-                type="button"
-                onClick={() => onSelectExampleWallet(exampleWallet.address)}
-                key={exampleWallet.address}
-                title={`Analyze ${exampleWallet.address}`}
-                aria-label={`Analyze example address ${exampleWallet.address}`}
-              >
-                {compactAddress(exampleWallet.address)}
-              </button>
-            ))}
+            {exampleWallets.map((exampleWallet) => {
+              const previewId = `wallet-preview-${exampleWallet.address.slice(-4)}`
+
+              return (
+                <div className="example-wallet" key={exampleWallet.address}>
+                  <button
+                    className={wallet?.id === exampleWallet.address ? 'active' : ''}
+                    disabled={isLoading}
+                    type="button"
+                    onClick={() => onSelectExampleWallet(exampleWallet.address)}
+                    aria-label={`Analyze ${exampleWallet.name}, ${exampleWallet.address}`}
+                    aria-describedby={previewId}
+                  >
+                    {compactAddress(exampleWallet.address)}
+                  </button>
+                  <aside className="example-wallet-preview" id={previewId} role="tooltip">
+                    <div className="example-wallet-preview__heading">
+                      <span><WalletCards aria-hidden="true" /></span>
+                      <div>
+                        <small>{exampleWallet.type}</small>
+                        <strong>{exampleWallet.name}</strong>
+                      </div>
+                    </div>
+                    <p>{exampleWallet.description}</p>
+                    <code>{exampleWallet.address}</code>
+                    <div className="example-wallet-preview__details">
+                      <small>Analyze to view</small>
+                      <span>Balance</span>
+                      <span>Portfolio</span>
+                      <span>Activity</span>
+                    </div>
+                  </aside>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -99,13 +121,14 @@ export function Header({
         >
           {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
         </button>
-        <div className="wallet-pill" role="status" aria-live="polite">
+        <button className="wallet-pill" type="button" aria-label={wallet ? `Connected wallet ${wallet.profile.wallet}` : 'No wallet loaded'}>
           <span className="wallet-pill__dot" />
           <span className="wallet-pill__copy">
-            <strong>{wallet ? 'Address analyzed' : 'No address selected'}</strong>
-            <small>{wallet ? wallet.profile.wallet : 'Search or try an example'}</small>
+            <strong>{wallet ? 'Connected' : 'No wallet'}</strong>
+            <small>{wallet ? wallet.profile.wallet : 'Enter address'}</small>
           </span>
-        </div>
+          <ChevronDown aria-hidden="true" />
+        </button>
       </div>
     </header>
   )

@@ -128,12 +128,28 @@ h1, h2, h3 { color: var(--ink); font-weight: 800; letter-spacing: -.035em; }
 .wallet-search-error { color: #dc2626; font-size: 10px; font-weight: 700; }
 .example-wallets { @apply flex min-w-0 items-center gap-[7px]; }
 .example-wallets > span { flex: 0 0 auto; color: var(--muted); font-size: 7px; font-weight: 750; text-transform: uppercase; letter-spacing: .08em; }
-.example-wallets > div { min-width: 0; display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; }
+.example-wallets > div { min-width: 0; display: flex; gap: 5px; overflow: visible; }
 .example-wallets > div::-webkit-scrollbar { display: none; }
+.example-wallet { position: relative; flex: 0 0 auto; }
 .example-wallets button { flex: 0 0 auto; padding: 5px 8px; border: 0; border-radius: 999px; color: var(--muted); cursor: pointer; background: rgba(255,255,255,.78); box-shadow: inset 0 0 0 1px rgba(44,122,123,.08); font-size: 7px; font-weight: 750; transition: transform .2s ease, color .2s ease, background .2s ease, box-shadow .2s ease; }
 .example-wallets button:hover:not(:disabled) { transform: translateY(-1px); color: var(--accent); background: #fff; }
+.example-wallets button:focus-visible { outline: 2px solid rgba(20,184,166,.45); outline-offset: 2px; }
 .example-wallets button.active { color: #fff; background: linear-gradient(145deg, var(--primary), var(--secondary)); box-shadow: 0 5px 12px rgba(44,122,123,.18); }
 .example-wallets button:disabled { cursor: wait; opacity: .62; }
+.example-wallet-preview { position: absolute; z-index: 20; top: calc(100% + 10px); left: 50%; width: 280px; padding: 14px; display: grid; gap: 10px; border: 1px solid rgba(20,184,166,.16); border-radius: 16px; visibility: hidden; opacity: 0; color: var(--ink); background: rgba(255,255,255,.97); box-shadow: 0 18px 45px rgba(15,23,42,.16); pointer-events: none; transform: translate(-50%, -4px); transition: opacity .18s ease, visibility .18s ease, transform .18s ease; }
+.example-wallet-preview::before { content: ""; position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; border-top: 1px solid rgba(20,184,166,.16); border-left: 1px solid rgba(20,184,166,.16); background: inherit; transform: translateX(-50%) rotate(45deg); }
+.example-wallet:hover .example-wallet-preview, .example-wallet:focus-within .example-wallet-preview { visibility: visible; opacity: 1; transform: translate(-50%, 0); }
+.example-wallet-preview__heading { display: flex; align-items: center; gap: 10px; }
+.example-wallet-preview__heading > span { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 11px; color: var(--accent); background: rgba(20,184,166,.1); }
+.example-wallet-preview__heading svg { width: 17px; height: 17px; }
+.example-wallet-preview__heading div { display: grid; gap: 2px; }
+.example-wallet-preview__heading small { color: var(--accent); font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.example-wallet-preview__heading strong { font-size: 12px; }
+.example-wallet-preview p { color: var(--muted); font-size: 10px; line-height: 1.5; }
+.example-wallet-preview code { overflow: hidden; padding: 7px 8px; border-radius: 8px; color: #475569; background: #f4f7f8; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.example-wallet-preview__details { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.example-wallet-preview__details small { width: 100%; color: var(--muted); font-size: 8px; font-weight: 700; }
+.example-wallet-preview__details span { padding: 4px 7px; border-radius: 999px; color: var(--accent); background: rgba(20,184,166,.09); font-size: 8px; font-weight: 750; }
 .wallet-empty-state { min-height: 58vh; padding: 48px 24px; display: grid; place-content: center; justify-items: center; gap: 12px; text-align: center; border: 1px dashed rgba(44,122,123,.2); border-radius: 28px; background: rgba(255,255,255,.55); }
 .wallet-empty-state > span { color: var(--accent); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .15em; }
 .wallet-empty-state h2 { font-size: clamp(28px, 4vw, 48px); }
@@ -143,11 +159,13 @@ h1, h2, h3 { color: var(--ink); font-weight: 800; letter-spacing: -.035em; }
 .icon-button:hover { transform: translateY(-2px); border-color: rgba(20,184,166,.18); background: #fff; }
 .icon-button svg { width: 18px; height: 18px; stroke-width: 1.8; }
 .notification-dot { position: absolute; top: 9px; right: 9px; width: 6px; height: 6px; border: 1.5px solid #fff; border-radius: 50%; background: #14b8a6; }
-.wallet-pill { min-width: 168px; height: 44px; padding: 0 10px 0 11px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(15,23,42,.065); border-radius: 15px; color: #111827; background: rgba(255,255,255,.72); }
+.wallet-pill { min-width: 148px; height: 44px; padding: 0 10px 0 11px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(15,23,42,.065); border-radius: 15px; color: #111827; cursor: pointer; background: rgba(255,255,255,.72); transition: transform .2s ease, border-color .2s ease, background .2s ease; }
+.wallet-pill:hover { transform: translateY(-2px); border-color: rgba(20,184,166,.2); background: #fff; }
 .wallet-pill__dot { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: #14b8a6; box-shadow: 0 0 0 4px rgba(20,184,166,.1); }
 .wallet-pill__copy { @apply grid min-w-0 flex-1 gap-0.5 text-left; }
 .wallet-pill__copy strong { font-size: 10px; font-weight: 750; }
 .wallet-pill__copy small { color: #6b7280; font-size: 8px; font-weight: 600; letter-spacing: .02em; }
+.wallet-pill > svg { width: 14px; height: 14px; flex: 0 0 auto; color: #9ca3af; stroke-width: 1.8; }
 
 .dashboard-grid { @apply grid gap-6; }
 .card-heading { @apply flex items-center justify-between gap-4; }
@@ -486,7 +504,11 @@ html[data-theme="dark"] .wallet-pill,
 html[data-theme="dark"] .example-wallets button { border-color: var(--border); color: var(--muted); background: rgba(30,38,51,.82); box-shadow: inset 0 0 0 1px var(--border); }
 html[data-theme="dark"] .wallet-search-error { color: #fca5a5; }
 html[data-theme="dark"] .icon-button:hover,
+html[data-theme="dark"] .wallet-pill:hover,
 html[data-theme="dark"] .example-wallets button:hover:not(:disabled) { color: var(--ink); background: #273244; }
+html[data-theme="dark"] .example-wallet-preview { border-color: var(--border); color: var(--ink); background: rgba(30,38,51,.98); box-shadow: 0 20px 50px rgba(0,0,0,.42); }
+html[data-theme="dark"] .example-wallet-preview::before { border-color: var(--border); }
+html[data-theme="dark"] .example-wallet-preview code { color: #cbd5e1; background: #151c27; }
 html[data-theme="dark"] .wallet-empty-state { border-color: var(--border); background: rgba(17,24,39,.55); }
 html[data-theme="dark"] .theme-toggle { color: var(--primary); box-shadow: inset 0 0 0 1px rgba(32,211,204,.18), 0 0 20px rgba(32,211,204,.08); }
 html[data-theme="dark"] .dashboard-loader { color: var(--ink); background: rgba(30,38,51,.94); box-shadow: 0 20px 60px rgba(0,0,0,.46); }
@@ -567,7 +589,7 @@ html[data-theme="dark"] .bottom-nav button.active > span { box-shadow: 0 0 22px 
 @media (max-width: 1050px) {
   .header { @apply grid-cols-[minmax(190px,.9fr)_minmax(320px,1.2fr)_auto] gap-3; }
   .wallet-pill { @apply w-11 min-w-11 justify-center p-0; }
-  .wallet-pill__copy { display: none; }
+  .wallet-pill__copy, .wallet-pill > svg { display: none; }
   .activity-layout { @apply grid-cols-[minmax(0,1.35fr)_minmax(270px,.85fr)] gap-[14px]; }
   .activity-feed, .highlights-card { @apply p-[18px]; }
   .transaction { @apply grid-cols-[auto_minmax(0,1fr)_auto]; }
@@ -626,7 +648,8 @@ html[data-theme="dark"] .bottom-nav button.active > span { box-shadow: 0 0 22px 
   .global-search kbd { display: none; }
   .global-search input { font-size: 11px; }
   .example-wallets { @apply flex-col items-start gap-[5px]; }
-  .example-wallets > div { @apply w-full; }
+  .example-wallets > div { @apply w-full pb-1; overflow-x: auto; }
+  .example-wallet-preview { display: none; }
   .card-heading { @apply items-start; }
   .card-heading h2 { font-size: 13px; }
   .title-with-icon { gap: 7px; }

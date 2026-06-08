@@ -1,9 +1,24 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 const DEFAULT_AVATAR = 'cebc058af93e566c96200932c258f395cbf87ebd.png'
 const EXAMPLE_WALLETS = [
-  { address: '0xbf03a2440bf80f7726ba5f60f0ac260ccad82a0b' },
-  { address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' },
-  { address: '0x28c6c06298d514db089934071355e5743bf21d60' },
+  {
+    name: 'Active wallet sample',
+    type: 'Public Ethereum address',
+    description: 'A useful example for exploring everyday wallet activity and on-chain behavior.',
+    address: '0xbf03a2440bf80f7726ba5f60f0ac260ccad82a0b',
+  },
+  {
+    name: 'Public wallet sample',
+    type: 'Well-known address',
+    description: 'A public address with a rich transaction history for exploring wallet analytics.',
+    address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
+  },
+  {
+    name: 'High-activity sample',
+    type: 'Frequent transactions',
+    description: 'A useful example for seeing how a wallet with frequent transfers is summarized.',
+    address: '0x28c6c06298d514db089934071355e5743bf21d60',
+  },
 ]
 
 const compactAddress = (address) => `${address.slice(0, 6)}...${address.slice(-4)}`
