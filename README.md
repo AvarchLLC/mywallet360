@@ -62,6 +62,21 @@ to `http://localhost:5000`. In production, set `VITE_API_URL` in the frontend
 host to the public backend origin, such as `https://api.example.com`. Configure
 the frontend origin in the backend's `FRONTEND_URL` CORS allowlist.
 
+### Vercel Backend
+
+Deploy the backend as a separate Vercel project from the same repository:
+
+- Root Directory: `backend`
+- Framework Preset: `Other`
+- Build Command: leave empty
+- Output Directory: leave empty
+- Install Command: `npm install`
+
+Vercel uses `backend/index.js` as the serverless Express entrypoint. Add all
+required backend variables from `backend/.env.example` in the Vercel project.
+Set `NODE_ENV=production`, `FRONTEND_URL` to the frontend deployment origin,
+and `VITE_API_URL` in the frontend project to the deployed backend origin.
+
 ## Local Preview
 
 ```bash
