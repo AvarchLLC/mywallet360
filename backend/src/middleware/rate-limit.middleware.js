@@ -24,6 +24,7 @@ const createRateLimit = ({ limit, code, message }) => rateLimit({
       code,
       message,
       retryAfterSeconds,
+      requestId: req.requestId,
     });
   },
 });

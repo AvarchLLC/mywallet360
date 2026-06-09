@@ -1,3 +1,5 @@
+import { apiFetch } from './api.js'
+
 const API_BASE_URL = import.meta.env?.VITE_API_URL || ''
 const ETHEREUM_ADDRESS_PATTERN = /^0x[a-fA-F0-9]{40}$/
 
@@ -32,7 +34,7 @@ export const resolveWalletIdentifier = async (input) => {
   let response
 
   try {
-    response = await fetch(`${API_BASE_URL}/api/resolve/${encodeURIComponent(originalInput)}`)
+    response = await apiFetch(`${API_BASE_URL}/api/resolve/${encodeURIComponent(originalInput)}`)
   } catch {
     throw new Error('Domain resolution is unavailable right now. Please try again.')
   }

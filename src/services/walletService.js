@@ -1,3 +1,5 @@
+import { apiFetch } from '../utils/api.js'
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 const DEFAULT_AVATAR = 'cebc058af93e566c96200932c258f395cbf87ebd.png'
 const EXAMPLE_WALLETS = [
@@ -48,6 +50,7 @@ const personalityConfig = {
   nftCollector: { label: 'NFT Collector', icon: '99_918.svg', tone: 'primary' },
   trader: { label: 'Trader', icon: '99_917.svg', tone: 'blue' },
   defiExplorer: { label: 'DeFi Explorer', icon: '99_938.svg', tone: 'green' },
+  holder: { label: 'Holder', icon: '99_959.svg', tone: 'green' },
 }
 
 const transactionConfig = (type = '') => {
@@ -185,7 +188,7 @@ async function getWalletByAddress(address) {
     throw new Error('Enter a valid Ethereum wallet address.')
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/wallet/${normalizedAddress}`)
+  const response = await apiFetch(`${API_BASE_URL}/api/wallet/${normalizedAddress}`)
   const data = await response.json().catch(() => null)
 
   if (!response.ok) {

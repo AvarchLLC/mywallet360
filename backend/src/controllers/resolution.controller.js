@@ -3,7 +3,7 @@ import {
   WalletResolutionError,
 } from "../services/domain-resolution.service.js";
 
-export const resolveWalletDomain = async (req, res) => {
+export const resolveWalletDomain = async (req, res, next) => {
   try {
     const result = await resolveDomain(req.params.identifier || "");
     res.json(result);
@@ -15,11 +15,6 @@ export const resolveWalletDomain = async (req, res) => {
       });
     }
 
-    console.error("Wallet domain resolution failed:", error);
-    return res.status(500).json({
-      code: "RESOLUTION_FAILED",
-      message: "We could not resolve that domain right now. Please try again.",
-    });
+    next(error);
   }
 };
-
