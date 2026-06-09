@@ -1,6 +1,6 @@
 import { createElement, useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Info, X } from 'lucide-react'
+import { Calculator, CheckCircle2, Info, X } from 'lucide-react'
 
 const OPEN_EVENT = 'metric-explainer:open'
 
@@ -19,6 +19,7 @@ export function MetricExplainer({
 
   const open = () => {
     const rect = triggerRef.current.getBoundingClientRect()
+    const mobile = window.innerWidth <= 700
     const width = Math.min(320, window.innerWidth - 24)
     const left = Math.min(Math.max(12, rect.left + rect.width / 2 - width / 2), window.innerWidth - width - 12)
     const fitsBelow = rect.bottom + 230 < window.innerHeight
@@ -28,6 +29,7 @@ export function MetricExplainer({
       top: fitsBelow ? rect.bottom + 10 : Math.max(12, rect.top - 10),
       width,
       placement: fitsBelow ? 'below' : 'above',
+      mode: mobile ? 'sheet' : 'popover',
     })
     window.dispatchEvent(new CustomEvent(OPEN_EVENT, { detail: panelId }))
   }
@@ -50,16 +52,29 @@ export function MetricExplainer({
     document.addEventListener('pointerdown', closeOutside)
     document.addEventListener('keydown', closeOnEscape)
     window.addEventListener('resize', close)
-    window.addEventListener('scroll', close, true)
+    const closeOnDesktopScroll = () => {
+      if (window.innerWidth > 700) close()
+    }
+    window.addEventListener('scroll', closeOnDesktopScroll, true)
 
     return () => {
       window.removeEventListener(OPEN_EVENT, closeOther)
       document.removeEventListener('pointerdown', closeOutside)
       document.removeEventListener('keydown', closeOnEscape)
       window.removeEventListener('resize', close)
-      window.removeEventListener('scroll', close, true)
+      window.removeEventListener('scroll', closeOnDesktopScroll, true)
     }
   }, [panelId])
+
+  useEffect(() => {
+    if (position?.mode !== 'sheet') return undefined
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [position?.mode])
 
   if (!explanation) return createElement(as, { className, ...props }, children)
 
@@ -78,33 +93,47 @@ export function MetricExplainer({
       }
     },
     ...props,
-  }, children, <span className="metric-explainer__hint"><Info aria-hidden="true" /><small>Details</small></span>)
+  }, children, <span className="metric-explainer__hint"><Info aria-hidden="true" /><small>Why?</small></span>)
 
   return (
     <>
       {trigger}
       {position && createPortal(
-        <aside
-          className={`metric-explanation metric-explanation--${position.placement}`}
-          id={panelId}
-          ref={panelRef}
-          role="dialog"
-          aria-label={explanation.title}
-          style={{ left: position.left, top: position.top, width: position.width }}
-        >
-          <div className="metric-explanation__heading">
-            <span><Info aria-hidden="true" /></span>
-            <strong>{explanation.title}</strong>
-            <button type="button" aria-label="Close details" onClick={close}><X aria-hidden="true" /></button>
-          </div>
-          <p>{explanation.summary}</p>
-          {explanation.formula && <code>{explanation.formula}</code>}
-          {explanation.details?.length > 0 && (
-            <ul>
-              {explanation.details.map((detail) => <li key={detail}>{detail}</li>)}
-            </ul>
-          )}
-        </aside>,
+        <>
+          <button className="metric-explanation__backdrop" type="button" aria-label="Close explanation" onClick={close} />
+          <aside
+            className={`metric-explanation metric-explanation--${position.placement} metric-explanation--${position.mode}`}
+            id={panelId}
+            ref={panelRef}
+            role="dialog"
+            aria-modal={position.mode === 'sheet' ? 'true' : undefined}
+            aria-label={explanation.title}
+            style={position.mode === 'popover' ? { left: position.left, top: position.top, width: position.width } : undefined}
+          >
+            <span className="metric-explanation__handle" aria-hidden="true" />
+            <div className="metric-explanation__heading">
+              <span><Info aria-hidden="true" /></span>
+              <div><small>Why this result?</small><strong>{explanation.title}</strong></div>
+              <button type="button" aria-label="Close details" onClick={close}><X aria-hidden="true" /></button>
+            </div>
+            <p className="metric-explanation__summary">{explanation.summary}</p>
+            {explanation.formula && (
+              <section className="metric-explanation__section">
+                <span><Calculator aria-hidden="true" /> How it is calculated</span>
+                <code>{explanation.formula}</code>
+              </section>
+            )}
+            {explanation.details?.length > 0 && (
+              <section className="metric-explanation__section">
+                <span><CheckCircle2 aria-hidden="true" /> Evidence from this wallet</span>
+                <ul>
+                  {explanation.details.map((detail) => <li key={detail}>{detail}</li>)}
+                </ul>
+              </section>
+            )}
+            <button className="metric-explanation__done" type="button" onClick={close}>Got it</button>
+          </aside>
+        </>,
         document.body,
       )}
     </>
