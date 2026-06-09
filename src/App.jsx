@@ -36,7 +36,7 @@ export default function App() {
   const { theme, toggleTheme } = useTheme()
 
   return (
-    <div className="app-shell">
+    <div className="app-shell mx-auto w-[min(100%,1180px)] px-[clamp(16px,3vw,32px)] pb-[124px] max-[700px]:px-4 max-[700px]:pb-[120px] max-[480px]:px-3 max-[480px]:pb-[116px] max-[360px]:px-[9px] max-[360px]:pb-28">
       <Header
         wallet={wallet}
         searchValue={searchValue}
@@ -60,9 +60,9 @@ export default function App() {
 
       {wallet ? (
         <>
-          <main className={isLoading ? 'dashboard-loading' : 'dashboard-ready'} key={wallet.id}>
+          <main className={`grid gap-9 max-[700px]:gap-6 ${isLoading ? 'dashboard-loading' : 'dashboard-ready'}`} key={wallet.id}>
             {isLoading && <DashboardLoader />}
-            <div className="dashboard-grid dashboard-grid--top">
+            <div className="dashboard-grid dashboard-grid--top grid gap-6 min-[900px]:grid-cols-2 min-[1180px]:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
               <BalanceCard balance={wallet.balance} />
               <PortfolioCard portfolio={wallet.portfolio} />
               <IdentityCard stats={wallet.identity} />
@@ -76,7 +76,7 @@ export default function App() {
           <BottomNav />
         </>
       ) : (
-        <main className="wallet-empty-state">
+        <main className="wallet-empty-state grid min-h-[58vh] place-content-center justify-items-center gap-3 rounded-[28px] border border-dashed border-[rgba(44,122,123,.2)] bg-white/55 px-6 py-12 text-center dark:border-[var(--border)] dark:bg-[rgba(17,24,39,.55)]">
           {isLoading && <DashboardLoader />}
           <span>Wallet analytics</span>
           <h2>Enter a wallet address or ENS name</h2>

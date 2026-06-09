@@ -116,19 +116,19 @@ export function Header({
   const isSearchBusy = isLoading || isResolving
 
   return (
-    <header className="header">
-      <div className="profile header__profile">
-        <div className="brand-mark">
+    <header className="header relative z-[100] my-[18px] mb-[30px] grid min-h-[102px] grid-cols-[minmax(200px,1fr)_minmax(340px,460px)_minmax(290px,1fr)] items-center gap-5 rounded-[20px] border border-white/50 bg-white/75 p-[14px_16px] shadow-[0_8px_32px_rgba(15,23,42,.06)] backdrop-blur-xl max-[1050px]:grid-cols-[minmax(190px,.9fr)_minmax(320px,1.2fr)_auto] max-[1050px]:gap-3 max-[899px]:grid-cols-[minmax(190px,1fr)_auto] max-[700px]:my-3 max-[700px]:mb-6 max-[700px]:min-h-0 max-[700px]:gap-3 max-[700px]:p-3 max-[480px]:grid-cols-[minmax(0,1fr)_auto] max-[480px]:rounded-[18px]">
+      <div className="profile header__profile flex w-fit min-w-0 items-center gap-8 self-center justify-self-center max-[480px]:gap-5">
+        <div className="brand-mark grid size-[76px] shrink-0 place-items-center rounded-2xl max-[480px]:size-[52px] max-[480px]:rounded-[13px]">
           <img src="/images/darklogo.svg" alt="" />
         </div>
-        <div className="profile__brand-copy">
+        <div className="profile__brand-copy grid min-w-0 content-center justify-items-center gap-[5px]">
           <h1><span>MyWallet</span><span className="brand-360">360</span></h1>
           <span className="profile__tagline">Understands every txn.</span>
         </div>
       </div>
 
-      <div className="wallet-search-area">
-        <form className="global-search" onSubmit={(event) => {
+      <div className="wallet-search-area grid min-w-0 gap-[7px] max-[899px]:col-span-full max-[899px]:row-start-2">
+        <form className="global-search flex h-12 w-full items-center gap-2.5 rounded-2xl border py-0 pr-2 pl-[14px] max-[480px]:h-11 max-[480px]:pl-3" onSubmit={(event) => {
           event.preventDefault()
           onSearchSubmit()
         }}>
@@ -154,7 +154,7 @@ export function Header({
             <code title={resolvedIdentifier.address}>{compactAddress(resolvedIdentifier.address)}</code>
           </div>
         )}
-        <div className="example-wallets">
+        <div className="example-wallets flex min-w-0 items-center gap-[7px] max-[480px]:flex-col max-[480px]:items-start max-[480px]:gap-[5px]">
           <span>Try an example</span>
           <div>
             {exampleWallets.map((exampleWallet) => {
@@ -198,8 +198,8 @@ export function Header({
         </div>
       </div>
 
-      <div className="header__actions">
-        <div className="notification-control" ref={notificationRef}>
+      <div className="header__actions flex min-w-0 items-center justify-end gap-2 max-[480px]:gap-[5px]">
+        <div className="notification-control relative shrink-0" ref={notificationRef}>
           <button
             className={`icon-button${isNotificationPanelOpen ? ' active' : ''}`}
             type="button"
@@ -253,7 +253,7 @@ export function Header({
         >
           {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
         </button>
-        <div className="wallet-control" ref={walletControlRef}>
+        <div className="wallet-control relative z-[110] shrink-0" ref={walletControlRef}>
           <button
             className={`wallet-pill${connectedAddress ? ' connected' : ''}`}
             type="button"
