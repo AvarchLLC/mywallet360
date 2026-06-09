@@ -14,7 +14,7 @@ export function isSwapTransaction(transaction) {
   return SWAP_SELECTORS.has(String(transaction.input || "").slice(0, 10).toLowerCase());
 }
 
-export function calculatePersonality({
+export function calculatePersonalityDetails({
   normalTransactions,
   tokenTransfers,
   nftTransfers,
@@ -34,5 +34,20 @@ export function calculatePersonality({
     holder: Math.max(0, incomingTransfers - outgoingTransfers) + currentAssetCount,
   };
 
-  return normalizePercentages(scores);
+  return {
+    percentages: normalizePercentages(scores),
+    factors: {
+      nftTransfers: nftTransfers.length,
+      swapCount,
+      outgoingTransfers,
+      defiInteractions,
+      incomingTransfers,
+      currentAssetCount,
+    },
+    rawScores: scores,
+  };
+}
+
+export function calculatePersonality(input) {
+  return calculatePersonalityDetails(input).percentages;
 }
