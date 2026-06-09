@@ -1,12 +1,11 @@
 import { Icon } from '../common/Icon'
-import { MetricExplainer } from '../common/MetricExplainer'
 import { SectionLabel } from '../common/SectionLabel'
 
 function FlowCard({ direction, data }) {
   const incoming = direction === 'in'
 
   return (
-    <MetricExplainer className={`card flow-card flow-card--${incoming ? 'received' : 'spent'} relative min-h-[184px] overflow-hidden p-[25px] max-[700px]:min-h-[172px] max-[700px]:p-5 max-[360px]:p-3.5`} explanation={data.explanation}>
+    <article className={`card flow-card flow-card--${incoming ? 'received' : 'spent'} relative min-h-[184px] overflow-hidden p-[25px] max-[700px]:min-h-[172px] max-[700px]:p-5 max-[360px]:p-3.5`}>
       <div className="flow-card__top flex justify-between gap-2.5">
         <span className={`icon-box ${incoming ? 'green' : 'red'}`}>
           <Icon name={incoming ? '99_740.svg' : '99_756.svg'} alt="" />
@@ -20,7 +19,7 @@ function FlowCard({ direction, data }) {
       <div className="progress">
         <i className={incoming ? 'green' : 'red'} style={{ width: `${data.percent}%` }} />
       </div>
-    </MetricExplainer>
+    </article>
   )
 }
 

@@ -131,7 +131,7 @@ function buildWallet(address, analytics) {
     ),
   }
   const personalityTraits = Object.entries(analytics.personality)
-    .map(([key, value]) => ({ ...personalityConfig[key], value, explanation: personalityExplanations[key] }))
+    .map(([key, value]) => ({ ...personalityConfig[key], value }))
     .sort((first, second) => second.value - first.value)
   const primaryPersonality = personalityTraits[0]
   const flowTotal = analytics.moneyFlow.received + analytics.moneyFlow.spent
@@ -202,6 +202,7 @@ function buildWallet(address, analytics) {
       title: primaryPersonality?.label || 'New Wallet',
       description: `This wallet is primarily shaped by ${primaryPersonality?.label.toLowerCase() || 'limited on-chain activity'}.`,
       traits: personalityTraits,
+      explanation: personalityExplanations[Object.entries(analytics.personality).sort((first, second) => second[1] - first[1])[0]?.[0]],
     },
     ai: {
       summary: `${compactAddress(address)} has ${analytics.transactionCount.toLocaleString()} transactions and ${formatUsd(analytics.netWorth)} in currently priced assets.`,
@@ -214,8 +215,8 @@ function buildWallet(address, analytics) {
     },
     flow: {
       periodLabel,
-      received: { value: `+${formatNumber(analytics.moneyFlow.received)} ETH`, percent: receivedPercent, explanation: explanation('Money Received', `Successful ETH transfers received during ${periodLabel.toLowerCase()}.`, 'Received share = received ETH ÷ (received ETH + spent ETH) × 100') },
-      spent: { value: `-${formatNumber(analytics.moneyFlow.spent)} ETH`, percent: spentPercent, explanation: explanation('Money Spent', `Successful ETH transfers sent during ${periodLabel.toLowerCase()}.`, 'Spent share = spent ETH ÷ (received ETH + spent ETH) × 100') },
+      received: { value: `+${formatNumber(analytics.moneyFlow.received)} ETH`, percent: receivedPercent },
+      spent: { value: `-${formatNumber(analytics.moneyFlow.spent)} ETH`, percent: spentPercent },
       categories: [
         { label: 'Incoming', value: `${analytics.moneyFlow.incomingCount} txns`, percent: receivedPercent, tone: 'mint', icon: '99_740.svg' },
         { label: 'Outgoing', value: `${analytics.moneyFlow.outgoingCount} txns`, percent: spentPercent, tone: 'red', icon: '99_756.svg' },
