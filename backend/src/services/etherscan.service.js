@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getAlchemyPortfolio } from "./alchemy-portfolio.service.js";
 import { generateInsights } from "./insights.service.js";
-import { calculatePersonality, isSwapTransaction } from "./personality.service.js";
+import { calculatePersonalityDetails, isSwapTransaction } from "./personality.service.js";
 import { calculateRiskScore } from "./scoring.service.js";
 import {
   fromWei,
@@ -422,13 +422,14 @@ export async function getWalletData(walletAddress, analysisDays = DEFAULT_ANALYS
     const nfts = buildNfts(nftTransfers, address);
     const protocolAnalysis = analyzeProtocols(normalTransactions);
     const moneyFlow = calculateMoneyFlow(normalTransactions, internalTransactions, address, ethPrice);
-    const walletPersonality = calculatePersonality({
+    const personalityDetails = calculatePersonalityDetails({
       normalTransactions,
       tokenTransfers,
       nftTransfers,
       protocolCounts: protocolAnalysis.counts,
       currentAssetCount: assets.length,
     });
+    const walletPersonality = personalityDetails.percentages;
     const personality = normalizePercentages({
       nftCollector: walletPersonality.nftCollector,
       trader: walletPersonality.trader,
@@ -449,6 +450,7 @@ export async function getWalletData(walletAddress, analysisDays = DEFAULT_ANALYS
       moneyFlow,
       personality,
       walletPersonality,
+      personalityFactors: personalityDetails.factors,
       timeline: buildTimeline(normalTransactions, address),
       assets,
       topAssets: pricedAssets.slice(0, 10),
