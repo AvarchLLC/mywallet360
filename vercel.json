@@ -1,4 +1,10 @@
 {
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://mywallet360-backend.vercel.app/api/:path*"
+    }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",
