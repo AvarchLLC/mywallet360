@@ -60,8 +60,8 @@ Production uses two Vercel projects from this repository:
 - Backend project: `backend`
 
 The frontend keeps requests same-origin, for example
-`https://mywallet360.vercel.app/api/wallet/...`. The root `vercel.json`
-forwards `/api/*` to `https://mywallet360-backend.vercel.app/api/*`.
+`https://mywallet360.vercel.app/api/wallet/...`. The root `api/[...path].js`
+function forwards `/api/*` to `https://mywallet360-backend.vercel.app/api/*`.
 
 Configure the backend Vercel project with:
 
@@ -78,7 +78,7 @@ the required variables from `backend/.env.example` to the backend project:
 - `ETHERSCAN_API_KEY`
 - `FRONTEND_URL=https://mywallet360.vercel.app`
 
-Do not set `VITE_API_URL` for the standard deployment. The frontend rewrite
+Do not set `VITE_API_URL` for the standard deployment. The frontend API proxy
 keeps the backend URL and provider credentials out of browser code.
 
 The public wallet API returns only dashboard-required summaries. Large raw
