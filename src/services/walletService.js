@@ -1,6 +1,13 @@
 import { apiFetch } from '../utils/api.js'
+import { formatCount } from '../utils/formatCount.js'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || ''
+export const ANALYSIS_PERIODS = [
+  { days: 1, label: 'Last day', shortLabel: '1D', description: 'Today’s activity' },
+  { days: 7, label: 'Last week', shortLabel: '7D', description: 'Recent activity' },
+  { days: 30, label: 'Last 30 days', shortLabel: '30D', description: 'Monthly overview' },
+  { days: 365, label: 'Last year', shortLabel: '1Y', description: 'Long-term activity' },
+]
 const DEFAULT_AVATAR = 'cebc058af93e566c96200932c258f395cbf87ebd.png'
 const EXAMPLE_WALLETS = [
   {
@@ -35,6 +42,8 @@ const formatUsd = (value) => new Intl.NumberFormat('en-US', {
 const formatNumber = (value, maximumFractionDigits = 4) => new Intl.NumberFormat('en-US', {
   maximumFractionDigits,
 }).format(Number(value || 0))
+
+const explanation = (title, summary, formula, details = []) => ({ title, summary, formula, details })
 
 const formatRelativeTime = (timestamp) => {
   const elapsedSeconds = Math.max(0, Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000))
@@ -93,6 +102,35 @@ function buildTransactions(timeline) {
 }
 
 function buildWallet(address, analytics) {
+  const periodLabel = ANALYSIS_PERIODS.find((period) => period.days === analytics.period.days)?.label
+    || `Last ${analytics.period.days} days`
+  const factors = analytics.personalityFactors || {}
+  const personalityExplanations = {
+    nftCollector: explanation(
+      'Why NFT Collector?',
+      'NFT activity receives two points for every NFT transfer found in the selected period.',
+      'NFT Collector score = NFT transfers × 2',
+      [`${formatNumber(factors.nftTransfers, 0)} NFT transfers contributed to this score.`],
+    ),
+    trader: explanation(
+      'Why Trader?',
+      'Trading behavior combines recognized swap calls with outgoing token transfers.',
+      'Trader score = swaps × 3 + outgoing token transfers',
+      [`${formatNumber(factors.swapCount, 0)} swaps and ${formatNumber(factors.outgoingTransfers, 0)} outgoing token transfers were found.`],
+    ),
+    defiExplorer: explanation(
+      'Why DeFi Explorer?',
+      'Interactions with recognized Aave, Compound, and 1inch contracts increase this score.',
+      'DeFi Explorer score = recognized DeFi interactions × 3',
+      [`${formatNumber(factors.defiInteractions, 0)} recognized DeFi interactions were found.`],
+    ),
+    holder: explanation(
+      'Why Holder?',
+      'Holding behavior grows when incoming transfers exceed outgoing transfers and when the wallet currently owns more assets.',
+      'Holder score = max(0, incoming − outgoing) + current assets',
+      [`${formatNumber(factors.incomingTransfers, 0)} incoming transfers, ${formatNumber(factors.outgoingTransfers, 0)} outgoing transfers, and ${formatNumber(factors.currentAssetCount, 0)} current assets were used.`],
+    ),
+  }
   const personalityTraits = Object.entries(analytics.personality)
     .map(([key, value]) => ({ ...personalityConfig[key], value }))
     .sort((first, second) => second.value - first.value)
@@ -101,11 +139,14 @@ function buildWallet(address, analytics) {
   const receivedPercent = flowTotal ? Math.round((analytics.moneyFlow.received / flowTotal) * 100) : 0
   const spentPercent = flowTotal ? 100 - receivedPercent : 0
   const activityLevel = analytics.transactionCount > 500 ? 'Very High' : analytics.transactionCount > 100 ? 'High' : 'Moderate'
+  const transactionCount = formatCount(analytics.transactionCount, analytics.analysisWindow?.normalTransactionsComplete)
   const portfolioScore = Math.min(99, Math.round(50 + Math.log10(analytics.netWorth + 1) * 12))
   const largestHolding = analytics.largestHolding
 
   return {
     id: address.toLowerCase(),
+    analysisDays: analytics.period.days,
+    periodLabel,
     chipLabel: compactAddress(address),
     profile: {
       name: 'Wallet Analytics',
@@ -114,18 +155,30 @@ function buildWallet(address, analytics) {
     },
     balance: {
       value: formatUsd(analytics.netWorth),
-      growth: 'Last 30 days',
-      rank: `${analytics.transactionCount.toLocaleString()} txns`,
+      valuationLabel: `Etherscan estimated priced assets${analytics.valuation.complete === false ? ' (partial)' : ''}`,
+      growth: periodLabel,
+      rank: `${transactionCount} txns`,
+      explanation: explanation(
+        'How period-estimated assets are calculated',
+        'This sums ETH and supported token balances estimated from Etherscan data for the selected period.',
+        'Estimated priced assets = Σ(estimated token balance × supported USD price)',
+        [
+          `${analytics.valuation?.pricedAssetCount || 0} of ${analytics.valuation?.totalAssetCount || 0} discovered assets had prices.`,
+          'Source: Etherscan balances, prices, and transfer history.',
+          analytics.valuation?.complete === false ? 'Token-transfer history hit the page cap, so this estimate is partial.' : 'Token-transfer pagination completed for the selected period.',
+        ],
+      ),
       stats: [
-        { label: 'Transactions', value: analytics.transactionCount.toLocaleString(), icon: 'rank' },
-        { label: 'Activity', value: activityLevel, icon: 'activity' },
-        { label: 'NFTs', value: analytics.nftCount.toLocaleString(), icon: 'risk' },
+        { label: 'Transactions', value: transactionCount, icon: 'rank' },
+        { label: 'Activity', value: activityLevel, icon: 'activity', explanation: explanation('Activity level', 'A simple label based on transaction count in the selected period.', 'Very High: >500 · High: >100 · Moderate: ≤100', [`This wallet has ${transactionCount} transactions in the selected period.`]) },
+        { label: 'NFT Activity', value: analytics.personalityFactors?.nftTransfers?.toLocaleString() || '0', icon: 'risk' },
         { label: 'Network', value: 'Ethereum', icon: 'network' },
       ],
     },
     portfolio: {
       status: analytics.netWorth > 0 ? 'Active' : 'Empty',
       score: portfolioScore,
+      scoreExplanation: explanation('Portfolio Score', 'A presentation score based on the logarithm of the selected period asset estimate.', 'min(99, round(50 + log10(estimated priced assets + 1) × 12))', [`Current score: ${portfolioScore}/100.`]),
       metrics: [
         {
           label: 'Largest Holding',
@@ -133,33 +186,27 @@ function buildWallet(address, analytics) {
           detail: largestHolding ? formatUsd(largestHolding.usdValue) : 'No priced holdings',
           icon: 'wallet',
           primary: true,
+          explanation: explanation('Largest priced holding', 'The priced asset with the highest calculated USD value in this estimate.', 'Largest holding = max(balance × USD price)', [`It represents ${largestHolding?.percentage || 0}% of the selected period estimate.`]),
         },
-        { label: 'NFT Count', value: analytics.nftCount.toLocaleString(), detail: 'Items collected', icon: 'nft' },
-        { label: 'Received', value: `${formatNumber(analytics.moneyFlow.received)} ETH`, detail: `${analytics.moneyFlow.incomingCount} transfers`, icon: 'defi' },
-        { label: 'Spent', value: `${formatNumber(analytics.moneyFlow.spent)} ETH`, detail: `${analytics.moneyFlow.outgoingCount} transfers`, icon: 'collection' },
+        { label: 'Risk Level', value: analytics.riskScore.level, detail: `${analytics.riskScore.score}/100 heuristic score`, icon: 'nft' },
+        { label: 'Most Used Protocol', value: analytics.mostUsedProtocol.name, detail: `${analytics.mostUsedProtocol.interactionCount} recognized interactions`, icon: 'defi' },
+        { label: 'Discovered Assets', value: analytics.assets.length.toLocaleString(), detail: analytics.valuation.complete ? 'Transfer scan completed' : 'Partial transfer scan', icon: 'collection' },
       ],
     },
     identity: [
-      { label: 'Portfolio Score', value: `${portfolioScore}/100`, description: 'Based on wallet value and activity', icon: 'portfolio', tone: 'gold' },
-      { label: 'Transactions', value: analytics.transactionCount.toLocaleString(), description: 'Activity in the last 30 days', icon: 'risk', tone: 'blue' },
-      { label: 'NFT Holdings', value: analytics.nftCount.toLocaleString(), description: 'Current NFT collection size', icon: 'age', tone: 'purple' },
-      { label: 'Data Source', value: 'Etherscan', description: 'Last 30 days of on-chain analytics', icon: 'kyc', tone: 'green' },
+      { label: 'Portfolio Score', value: `${portfolioScore}/100`, description: 'Based on the selected period asset estimate', icon: 'portfolio', tone: 'gold' },
+      { label: 'Transactions', value: transactionCount, description: `Activity during ${periodLabel.toLowerCase()}`, icon: 'risk', tone: 'blue' },
+      { label: 'NFT Activity', value: analytics.personalityFactors?.nftTransfers?.toLocaleString() || '0', description: `Transfers during ${periodLabel.toLowerCase()}`, icon: 'age', tone: 'purple' },
+      { label: 'Data Source', value: 'Etherscan', description: analytics.valuation.complete ? 'Transfer scan completed' : 'Partial transfer scan', icon: 'kyc', tone: 'green' },
     ],
     personality: {
       title: primaryPersonality?.label || 'New Wallet',
       description: `This wallet is primarily shaped by ${primaryPersonality?.label.toLowerCase() || 'limited on-chain activity'}.`,
       traits: personalityTraits,
-    },
-    ai: {
-      summary: `${compactAddress(address)} has ${analytics.transactionCount.toLocaleString()} transactions and a net worth of ${formatUsd(analytics.netWorth)}.`,
-      confidence: 'Based on the last 30 days of activity',
-      insights: [
-        { text: `${activityLevel} wallet activity.`, detail: `${analytics.transactionCount.toLocaleString()} transactions`, icon: 'network', tone: 'blue' },
-        { text: `${analytics.nftCount.toLocaleString()} NFTs currently held.`, detail: 'Collection activity', icon: 'risk', tone: 'green' },
-        { text: `${primaryPersonality?.label || 'No dominant behavior'} is the primary trait.`, detail: `${primaryPersonality?.value || 0}% score`, icon: 'growth', tone: 'teal' },
-      ],
+      explanation: personalityExplanations[Object.entries(analytics.personality).sort((first, second) => second[1] - first[1])[0]?.[0]],
     },
     flow: {
+      periodLabel,
       received: { value: `+${formatNumber(analytics.moneyFlow.received)} ETH`, percent: receivedPercent },
       spent: { value: `-${formatNumber(analytics.moneyFlow.spent)} ETH`, percent: spentPercent },
       categories: [
@@ -172,27 +219,31 @@ function buildWallet(address, analytics) {
       { label: 'Largest Holding', value: largestHolding?.symbol || 'None', detail: `${largestHolding?.percentage || 0}%`, icon: 'holding', tone: 'violet' },
       { label: 'Money Received', value: `${formatNumber(analytics.moneyFlow.received)} ETH`, detail: `${analytics.moneyFlow.incomingCount} transfers`, icon: 'protocol', tone: 'pink' },
       { label: 'Money Spent', value: `${formatNumber(analytics.moneyFlow.spent)} ETH`, detail: `${analytics.moneyFlow.outgoingCount} transfers`, icon: 'chain', tone: 'blue' },
-      { label: 'Transactions', value: analytics.transactionCount.toLocaleString(), detail: 'last 30 days', icon: 'transactions', tone: 'green' },
+      { label: 'Transactions', value: transactionCount, detail: periodLabel.toLowerCase(), icon: 'transactions', tone: 'green' },
     ],
     insights: [
-      { label: 'Net Worth', value: formatNumber(analytics.netWorth, 2), suffix: 'USD' },
-      { label: 'Largest Holding', value: largestHolding?.percentage || 0, suffix: '%' },
+      { label: 'Risk Level', value: analytics.riskScore.level, suffix: `${analytics.riskScore.score}/100` },
+      { label: 'Recognized Protocol', value: analytics.mostUsedProtocol.name, suffix: `${analytics.mostUsedProtocol.interactionCount} interactions` },
     ],
   }
 }
 
-async function getWalletByAddress(address) {
+async function getWalletByAddress(address, days = 30) {
   const normalizedAddress = address.trim()
 
   if (!/^0x[a-fA-F0-9]{40}$/.test(normalizedAddress)) {
     throw new Error('Enter a valid Ethereum wallet address.')
   }
 
-  const response = await apiFetch(`${API_BASE_URL}/api/wallet/${normalizedAddress}`)
+  const response = await apiFetch(`${API_BASE_URL}/api/wallet/${normalizedAddress}?days=${days}`)
   const data = await response.json().catch(() => null)
 
   if (!response.ok) {
     throw new Error(data?.message || 'Unable to fetch wallet analytics.')
+  }
+
+  if (data?.period?.days !== days) {
+    throw new Error('The API returned stale period data. Restart or deploy the latest backend.')
   }
 
   return buildWallet(normalizedAddress, data)

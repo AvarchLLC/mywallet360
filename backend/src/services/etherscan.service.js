@@ -1,6 +1,6 @@
 import axios from "axios";
 import { generateInsights } from "./insights.service.js";
-import { calculatePersonality, isSwapTransaction } from "./personality.service.js";
+import { calculatePersonalityDetails, isSwapTransaction } from "./personality.service.js";
 import { calculateRiskScore } from "./scoring.service.js";
 import {
   fromWei,
@@ -16,9 +16,23 @@ const PAGE_SIZE = 1000;
 const MAX_PAGES = 5;
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const REQUEST_INTERVAL_MS = 350;
-const ANALYSIS_DAYS = 30;
-const STABLECOINS = new Set(["USDC", "USDT", "DAI", "USDS", "TUSD", "USDP", "GUSD", "FRAX"]);
-const ETH_EQUIVALENTS = new Set(["WETH", "STETH", "WSTETH"]);
+const DEFAULT_ANALYSIS_DAYS = 30;
+const AI_INSIGHTS_ENABLED = process.env.ENABLE_AI_INSIGHTS === "true";
+const USD_PEGGED_TOKEN_ADDRESSES = new Set([
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // USDC
+  "0xdac17f958d2ee523a2206206994597c13d831ec7", // USDT
+  "0x6b175474e89094c44da98b954eedeac495271d0f", // DAI
+  "0xdc035d45d973e3ec169d2276ddab16f1e407384f", // USDS
+  "0x0000000000085d4780b73119b644ae5ecd22b376", // TUSD
+  "0x8e870d67f660d95d5be530380d0ec0bd388289e1", // USDP
+  "0x056fd409e1d7a124bd7017459dfea2f387b6d5cd", // GUSD
+  "0x853d955acef822db058eb8505911ed77f175b99e", // FRAX
+]);
+const ETH_EQUIVALENT_TOKEN_ADDRESSES = new Set([
+  "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // WETH
+  "0xae7ab96520de3a18e5e111b5eaab095312d7fe84", // stETH
+  "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0", // wstETH
+]);
 
 const PROTOCOL_ADDRESSES = {
   Uniswap: new Set([
@@ -160,21 +174,30 @@ async function fetchPaginated(action, address, extra = {}) {
   return { records, complete };
 }
 
-async function getAnalysisPeriod() {
+async function getAnalysisPeriod(days) {
   const end = new Date();
-  const start = new Date(end.getTime() - ANALYSIS_DAYS * 86_400_000);
-  const startBlock = await etherscanRequest({
-    module: "block",
-    action: "getblocknobytime",
-    timestamp: Math.floor(start.getTime() / 1000),
-    closest: "after",
-  });
+  const start = new Date(end.getTime() - days * 86_400_000);
+  const [startBlock, endBlock] = await Promise.all([
+    etherscanRequest({
+      module: "block",
+      action: "getblocknobytime",
+      timestamp: Math.floor(start.getTime() / 1000),
+      closest: "after",
+    }),
+    etherscanRequest({
+      module: "block",
+      action: "getblocknobytime",
+      timestamp: Math.floor(end.getTime() / 1000),
+      closest: "before",
+    }),
+  ]);
 
   return {
-    days: ANALYSIS_DAYS,
+    days,
     start: start.toISOString(),
     end: end.toISOString(),
     startBlock: Number(startBlock),
+    endBlock: Number(endBlock),
   };
 }
 
@@ -242,10 +265,11 @@ function buildAssets(tokenTransfers, ethBalance, ethPrice, address) {
     .filter((asset) => asset.rawBalance > 0n)
     .map((asset) => {
       const balance = tokenAmount(asset.rawBalance.toString(), asset.decimals);
-      const symbol = asset.symbol.toUpperCase();
-      const usdValue = STABLECOINS.has(symbol)
+      const isUsdPegged = USD_PEGGED_TOKEN_ADDRESSES.has(asset.contractAddress);
+      const isEthEquivalent = ETH_EQUIVALENT_TOKEN_ADDRESSES.has(asset.contractAddress);
+      const usdValue = isUsdPegged
         ? balance
-        : ETH_EQUIVALENTS.has(symbol)
+        : isEthEquivalent
           ? balance * ethPrice
           : 0;
 
@@ -255,7 +279,7 @@ function buildAssets(tokenTransfers, ethBalance, ethPrice, address) {
         name: asset.name,
         balance: round(balance, 8),
         usdValue: round(usdValue, 2),
-        priceAvailable: STABLECOINS.has(symbol) || ETH_EQUIVALENTS.has(symbol),
+        priceAvailable: isUsdPegged || isEthEquivalent,
       };
     });
 
@@ -352,20 +376,21 @@ function buildLargestHolding(assets) {
     : null;
 }
 
-export async function getWalletData(walletAddress) {
+export async function getWalletData(walletAddress, analysisDays = DEFAULT_ANALYSIS_DAYS) {
   const address = walletAddress.toLowerCase();
 
   if (!/^0x[a-f0-9]{40}$/.test(address)) {
     throw new Error("Invalid Ethereum wallet address");
   }
 
-  const cachedWallet = walletCache.get(address);
+  const cacheKey = `${address}:${analysisDays}`;
+  const cachedWallet = walletCache.get(cacheKey);
   if (cachedWallet?.expiresAt > Date.now()) {
     return cachedWallet.value;
   }
 
   try {
-    const period = await getAnalysisPeriod();
+    const period = await getAnalysisPeriod(analysisDays);
     const [
       normalResult,
       internalResult,
@@ -374,10 +399,10 @@ export async function getWalletData(walletAddress) {
       balanceWei,
       priceResult,
     ] = await Promise.all([
-      fetchPaginated("txlist", address, { startblock: period.startBlock }),
-      fetchPaginated("txlistinternal", address, { startblock: period.startBlock }),
-      fetchPaginated("tokentx", address, { startblock: period.startBlock }),
-      fetchPaginated("tokennfttx", address, { startblock: period.startBlock }),
+      fetchPaginated("txlist", address, { startblock: period.startBlock, endblock: period.endBlock }),
+      fetchPaginated("txlistinternal", address, { startblock: period.startBlock, endblock: period.endBlock }),
+      fetchPaginated("tokentx", address, { startblock: period.startBlock, endblock: period.endBlock }),
+      fetchPaginated("tokennfttx", address, { startblock: period.startBlock, endblock: period.endBlock }),
       etherscanRequest({ module: "account", action: "balance", address, tag: "latest" }),
       etherscanRequest({ module: "stats", action: "ethprice" }),
     ]);
@@ -389,16 +414,18 @@ export async function getWalletData(walletAddress) {
     const tokenTransfers = addDirection(tokenResult.records, address);
     const nftTransfers = addDirection(nftResult.records, address);
     const assets = buildAssets(tokenTransfers, ethBalance, ethPrice, address);
+    const pricedAssets = assets.filter((asset) => asset.priceAvailable);
     const nfts = buildNfts(nftTransfers, address);
     const protocolAnalysis = analyzeProtocols(normalTransactions);
     const moneyFlow = calculateMoneyFlow(normalTransactions, internalTransactions, address, ethPrice);
-    const walletPersonality = calculatePersonality({
+    const personalityDetails = calculatePersonalityDetails({
       normalTransactions,
       tokenTransfers,
       nftTransfers,
       protocolCounts: protocolAnalysis.counts,
       currentAssetCount: assets.length,
     });
+    const walletPersonality = personalityDetails.percentages;
     const personality = normalizePercentages({
       nftCollector: walletPersonality.nftCollector,
       trader: walletPersonality.trader,
@@ -409,18 +436,27 @@ export async function getWalletData(walletAddress) {
       normalTransactions,
       protocolCounts: protocolAnalysis.counts,
     });
-    const netWorth = round(assets.reduce((sum, asset) => sum + asset.usdValue, 0), 2);
+    const netWorth = round(pricedAssets.reduce((sum, asset) => sum + asset.usdValue, 0), 2);
     const analytics = {
       netWorth,
       nftCount: nfts.reduce((sum, nft) => sum + nft.amount, 0),
       transactionCount: normalTransactions.length,
-      largestHolding: buildLargestHolding(assets),
+      transactionCountIsLowerBound: !normalResult.complete,
+      largestHolding: buildLargestHolding(pricedAssets),
       moneyFlow,
       personality,
       walletPersonality,
+      personalityFactors: personalityDetails.factors,
       timeline: buildTimeline(normalTransactions, address),
       assets,
-      topAssets: assets.slice(0, 10),
+      topAssets: pricedAssets.slice(0, 10),
+      valuation: {
+        source: "etherscan",
+        networks: ["eth-mainnet"],
+        pricedAssetCount: pricedAssets.length,
+        totalAssetCount: assets.length,
+        complete: tokenResult.complete,
+      },
       nfts,
       topNfts: nfts.slice(0, 10),
       mostUsedProtocol: {
@@ -433,6 +469,8 @@ export async function getWalletData(walletAddress) {
         days: period.days,
         start: period.start,
         end: period.end,
+        startBlock: period.startBlock,
+        endBlock: period.endBlock,
       },
       analysisWindow: {
         maxRecordsPerCategory: PAGE_SIZE * MAX_PAGES,
@@ -445,10 +483,10 @@ export async function getWalletData(walletAddress) {
 
     const result = {
       ...analytics,
-      aiInsights: await generateInsights(analytics),
+      aiInsights: AI_INSIGHTS_ENABLED ? await generateInsights(analytics) : null,
     };
 
-    walletCache.set(address, {
+    walletCache.set(cacheKey, {
       value: result,
       expiresAt: Date.now() + CACHE_TTL_MS,
     });
