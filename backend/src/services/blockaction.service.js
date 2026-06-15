@@ -510,7 +510,6 @@ export function buildValuationHistory({
   const step = (chronological.length - 1) / (maxPoints - 1);
   return Array.from({ length: maxPoints }, (_, index) => chronological[Math.round(index * step)]);
 }
-
 export async function getTransactionReportData(walletAddress, from, to) {
   const address = walletAddress.toLowerCase();
 
