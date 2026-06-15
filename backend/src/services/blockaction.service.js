@@ -9,13 +9,13 @@ import {
   tokenAmount,
 } from "../utils/calculations.js";
 
-const ETHERSCAN_URL = "https://api.etherscan.io/v2/api";
-const CHAIN_ID = process.env.ETHERSCAN_CHAIN_ID || "1";
+const BLOCKACTION_URL = process.env.BLOCKACTION_API_URL;
+const CHAIN_ID = process.env.BLOCKACTION_CHAIN_ID || "1";
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 5;
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const REQUEST_INTERVAL_MS = 350;
-const DEFAULT_ANALYSIS_DAYS = 30;
+const DEFAULT_ANALYSIS_PERIOD = "ytd";
 const USD_PEGGED_TOKEN_ADDRESSES = new Set([
   "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", // USDC
   "0xdac17f958d2ee523a2206206994597c13d831ec7", // USDT
@@ -90,16 +90,18 @@ function setCached(key, value) {
   return value;
 }
 
-async function etherscanRequest(params) {
-  if (!process.env.ETHERSCAN_API_KEY) {
-    throw new Error("ETHERSCAN_API_KEY is not configured");
+async function blockActionRequest(params) {
+  if (!BLOCKACTION_URL) {
+    throw new Error("BLOCKACTION_API_URL is not configured");
   }
 
   const requestParams = {
     chainid: CHAIN_ID,
-    apikey: process.env.ETHERSCAN_API_KEY,
     ...params,
   };
+  if (process.env.BLOCKACTION_API_KEY) {
+    requestParams.apikey = process.env.BLOCKACTION_API_KEY;
+  }
   const cacheKey = new URLSearchParams(requestParams).toString();
   const cached = getCached(cacheKey);
   if (cached) return cached;
@@ -109,12 +111,12 @@ async function etherscanRequest(params) {
 
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
-        const response = await axios.get(ETHERSCAN_URL, {
+        const response = await axios.get(BLOCKACTION_URL, {
           params: requestParams,
           timeout: 15_000,
         });
 
-        if (response.data.status === "0") {
+        if (response.data?.status === "0") {
           const errorMessage = `${response.data.message} ${response.data.result}`.toLowerCase();
 
           if (errorMessage.includes("no transactions")) {
@@ -126,10 +128,10 @@ async function etherscanRequest(params) {
             continue;
           }
 
-          throw new Error(response.data.result || response.data.message || "Etherscan request failed");
+          throw new Error(response.data.result || response.data.message || "BlockAction request failed");
         }
 
-        return setCached(cacheKey, response.data.result);
+        return setCached(cacheKey, response.data?.result ?? response.data?.data ?? response.data);
       } catch (error) {
         lastError = error;
 
@@ -151,7 +153,7 @@ async function fetchPaginated(action, address, extra = {}) {
   let complete = false;
 
   for (let page = 1; page <= MAX_PAGES; page += 1) {
-    const result = await etherscanRequest({
+    const result = await blockActionRequest({
       module: "account",
       action,
       address,
@@ -172,17 +174,29 @@ async function fetchPaginated(action, address, extra = {}) {
   return { records, complete };
 }
 
-async function getAnalysisPeriod(days) {
+function normalizeAnalysisPeriod(analysisPeriod) {
+  if (analysisPeriod === "ytd") return "ytd";
+
+  const days = Number(analysisPeriod);
+  if ([1, 7, 30, 365].includes(days)) return days;
+
+  throw new Error("Invalid analysis period");
+}
+
+async function getAnalysisPeriod(analysisPeriod) {
   const end = new Date();
-  const start = new Date(end.getTime() - days * 86_400_000);
+  const normalizedPeriod = normalizeAnalysisPeriod(analysisPeriod);
+  const start = normalizedPeriod === "ytd"
+    ? new Date(Date.UTC(end.getUTCFullYear(), 0, 1))
+    : new Date(end.getTime() - normalizedPeriod * 86_400_000);
   const [startBlock, endBlock] = await Promise.all([
-    etherscanRequest({
+    blockActionRequest({
       module: "block",
       action: "getblocknobytime",
       timestamp: Math.floor(start.getTime() / 1000),
       closest: "after",
     }),
-    etherscanRequest({
+    blockActionRequest({
       module: "block",
       action: "getblocknobytime",
       timestamp: Math.floor(end.getTime() / 1000),
@@ -191,7 +205,8 @@ async function getAnalysisPeriod(days) {
   ]);
 
   return {
-    days,
+    id: normalizedPeriod === "ytd" ? "ytd" : `${normalizedPeriod}d`,
+    days: Math.max(1, Math.ceil((end.getTime() - start.getTime()) / 86_400_000)),
     start: start.toISOString(),
     end: end.toISOString(),
     startBlock: Number(startBlock),
@@ -203,7 +218,7 @@ async function getDateRange(from, to) {
   const start = new Date(`${from}T00:00:00.000Z`);
   const requestedEnd = new Date(`${to}T23:59:59.999Z`);
   const includesCurrentDay = requestedEnd.getTime() >= Date.now();
-  const startBlockRequest = etherscanRequest({
+  const startBlockRequest = blockActionRequest({
     module: "block",
     action: "getblocknobytime",
     timestamp: Math.floor(start.getTime() / 1000),
@@ -211,7 +226,7 @@ async function getDateRange(from, to) {
   });
   const endBlockRequest = includesCurrentDay
     ? Promise.resolve(99_999_999)
-    : etherscanRequest({
+    : blockActionRequest({
       module: "block",
       action: "getblocknobytime",
       timestamp: Math.floor(requestedEnd.getTime() / 1000),
@@ -556,21 +571,22 @@ export function buildPublicWalletData(analytics) {
   };
 }
 
-export async function getWalletData(walletAddress, analysisDays = DEFAULT_ANALYSIS_DAYS) {
+export async function getWalletData(walletAddress, analysisPeriod = DEFAULT_ANALYSIS_PERIOD) {
   const address = walletAddress.toLowerCase();
 
   if (!/^0x[a-f0-9]{40}$/.test(address)) {
     throw new Error("Invalid Ethereum wallet address");
   }
 
-  const cacheKey = `${address}:${analysisDays}`;
+  const normalizedPeriod = normalizeAnalysisPeriod(analysisPeriod);
+  const cacheKey = `${address}:${normalizedPeriod}`;
   const cachedWallet = walletCache.get(cacheKey);
   if (cachedWallet?.expiresAt > Date.now()) {
     return cachedWallet.value;
   }
 
   try {
-    const period = await getAnalysisPeriod(analysisDays);
+    const period = await getAnalysisPeriod(normalizedPeriod);
     const [
       normalResult,
       internalResult,
@@ -583,8 +599,8 @@ export async function getWalletData(walletAddress, analysisDays = DEFAULT_ANALYS
       fetchPaginated("txlistinternal", address, { startblock: period.startBlock, endblock: period.endBlock }),
       fetchPaginated("tokentx", address, { startblock: period.startBlock, endblock: period.endBlock }),
       fetchPaginated("tokennfttx", address, { startblock: period.startBlock, endblock: period.endBlock }),
-      etherscanRequest({ module: "account", action: "balance", address, tag: "latest" }),
-      etherscanRequest({ module: "stats", action: "ethprice" }),
+      blockActionRequest({ module: "account", action: "balance", address, tag: "latest" }),
+      blockActionRequest({ module: "stats", action: "ethprice" }),
     ]);
 
     const ethPrice = Number(priceResult.ethusd || 0);
@@ -639,8 +655,11 @@ export async function getWalletData(walletAddress, analysisDays = DEFAULT_ANALYS
       timeline: buildTimeline(normalTransactions, address),
       valuationHistory,
       valuation: {
-        source: "etherscan",
-        networks: ["eth-mainnet"],
+        source: "blockaction",
+        networks: (normalTransactions.length > 0 ||
+          internalTransactions.length > 0 ||
+          tokenTransfers.length > 0 ||
+          nftTransfers.length > 0) ? ["eth-mainnet"] : [],
         pricedAssetCount: pricedAssets.length,
         totalAssetCount: assets.length,
         complete: tokenResult.complete,
@@ -652,6 +671,7 @@ export async function getWalletData(walletAddress, analysisDays = DEFAULT_ANALYS
       },
       riskScore,
       period: {
+        id: period.id,
         days: period.days,
         start: period.start,
         end: period.end,

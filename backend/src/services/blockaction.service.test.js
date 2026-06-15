@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildPublicWalletData, buildValuationHistory } from "./etherscan.service.js";
+import { buildPublicWalletData, buildValuationHistory } from "./blockaction.service.js";
 
 test("builds dated current-price value estimates from wallet flows", () => {
   const history = buildValuationHistory({
@@ -51,7 +51,7 @@ test("wallet API response excludes large internal collections", () => {
     valuation: { totalAssetCount: 2 },
     mostUsedProtocol: { name: "Other", interactionCount: 1, counts: { Other: 1 } },
     riskScore: {},
-    period: { days: 30 },
+    period: { id: "30d", days: 30 },
     analysisWindow: {},
   });
 

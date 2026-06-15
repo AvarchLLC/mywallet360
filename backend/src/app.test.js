@@ -1,3 +1,4 @@
+import "dotenv/config";
 import assert from "node:assert/strict";
 import test from "node:test";
 import app from "./app.js";
@@ -44,6 +45,16 @@ test("rejects unsupported analysis periods before calling upstream services", as
 
     assert.equal(response.status, 400);
     assert.equal(body.code, "INVALID_ANALYSIS_PERIOD");
+  });
+});
+
+test("accepts YTD as the default analysis period before calling upstream services", async () => {
+  await withServer(async (baseUrl) => {
+    const response = await fetch(`${baseUrl}/api/wallet/0x742d35Cc6634C0532925a3b844Bc454e4438f44e`);
+    const body = await response.json();
+
+    assert.notEqual(response.status, 400);
+    assert.notEqual(body.code, "INVALID_ANALYSIS_PERIOD");
   });
 });
 

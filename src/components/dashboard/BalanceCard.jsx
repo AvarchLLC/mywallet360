@@ -27,8 +27,8 @@ function ValueTooltip({ active, payload }) {
 export function BalanceCard({ balance, periods, selectedDays, pendingDays, isLoading, error, onPeriodChange }) {
   const menuRef = useRef(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const selectedPeriod = periods.find((period) => period.days === selectedDays)
-  const visiblePeriod = periods.find((period) => period.days === pendingDays) || selectedPeriod
+  const selectedPeriod = periods.find((period) => period.value === selectedDays)
+  const visiblePeriod = periods.find((period) => period.value === pendingDays) || selectedPeriod
 
   useEffect(() => {
     const closeMenu = (event) => {
@@ -69,19 +69,19 @@ export function BalanceCard({ balance, periods, selectedDays, pendingDays, isLoa
           <div className="absolute top-[calc(100%+8px)] right-0 grid w-[230px] gap-1 rounded-2xl border border-white/20 bg-[rgba(7,91,90,.96)] p-1.5 shadow-[0_18px_45px_rgba(0,60,59,.28)] backdrop-blur-xl" role="menu">
             {periods.map((period) => (
               <button
-                className={`grid cursor-pointer grid-cols-[34px_1fr_auto] items-center gap-2 rounded-xl border-0 px-2.5 py-2 text-left text-white transition ${selectedDays === period.days ? 'bg-white/16' : 'bg-transparent hover:bg-white/10'}`}
+                className={`grid cursor-pointer grid-cols-[34px_1fr_auto] items-center gap-2 rounded-xl border-0 px-2.5 py-2 text-left text-white transition ${selectedDays === period.value ? 'bg-white/16' : 'bg-transparent hover:bg-white/10'}`}
                 type="button"
                 role="menuitemradio"
-                aria-checked={selectedDays === period.days}
-                onClick={() => selectPeriod(period.days)}
-                key={period.days}
+                aria-checked={selectedDays === period.value}
+                onClick={() => selectPeriod(period.value)}
+                key={period.id}
               >
                 <span className="grid size-[30px] place-items-center rounded-lg bg-white/10 text-[9px] font-extrabold">{period.shortLabel}</span>
                 <span className="grid gap-0.5">
                   <strong className="text-[10px]">{period.label}</strong>
                   <small className="text-[8px] text-white/60">{period.description}</small>
                 </span>
-                {selectedDays === period.days && <Check className="size-3.5" aria-hidden="true" />}
+                {selectedDays === period.value && <Check className="size-3.5" aria-hidden="true" />}
               </button>
             ))}
           </div>
