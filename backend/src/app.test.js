@@ -55,8 +55,8 @@ test("accepts YTD as the default analysis period before calling upstream service
     const response = await fetch(`${baseUrl}/api/wallet/0x742d35Cc6634C0532925a3b844Bc454e4438f44e`);
     const body = await response.json();
 
-    assert.notEqual(response.status, 400);
-    assert.notEqual(body.code, "INVALID_ANALYSIS_PERIOD");
+    assert.equal(response.status, 500);
+    assert.equal(body.code, "INTERNAL_SERVER_ERROR");
   });
 });
 
