@@ -82,9 +82,9 @@ export function Activity({ walletAddress, transactions, highlights, periodLabel,
 
   return (
     <>
-    {isOnActivityTab && (
+    { ( 
     <section className="activity min-[900px]:px-0.5">
-      <form className="report-download" onSubmit={downloadReport}>
+      {isOnActivityTab &&<form className="report-download" onSubmit={downloadReport}>
         <div className="report-download__intro">
           <span className="report-download__icon"><FileSpreadsheet aria-hidden="true" /></span>
           <div>
@@ -115,7 +115,7 @@ export function Activity({ walletAddress, transactions, highlights, periodLabel,
           </button>
           {reportError && <span className="report-download__error" role="alert">{reportError}</span>}
         </div>
-      </form>
+      </form>}
       <div className="activity-layout grid grid-cols-[minmax(0,1.65fr)_minmax(300px,.9fr)] items-stretch gap-[18px] max-[1050px]:grid-cols-[minmax(0,1.35fr)_minmax(270px,.85fr)] max-[1050px]:gap-[14px] max-[899px]:grid-cols-1">
         <div className="card activity-feed rounded-3xl border-0 p-[22px] max-[1050px]:p-[18px] max-[480px]:rounded-[20px] max-[480px]:p-3.5">
           <div className="activity-card__heading flex min-h-[35px] items-center justify-between gap-4">
