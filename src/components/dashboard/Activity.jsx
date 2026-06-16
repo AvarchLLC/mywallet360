@@ -53,6 +53,7 @@ export function Activity({ walletAddress, transactions, highlights, periodLabel,
   const [isDownloading, setIsDownloading] = useState(false)
   const [reportError, setReportError] = useState('')
   const visibleTransactions = showAll ? transactions : transactions.slice(0, 3)
+  const [isOnActivityTab, setIsOnActivityTab] = useState(false);
 
   useEffect(() => {
     setFrom(reportRange.from)
@@ -80,6 +81,8 @@ export function Activity({ walletAddress, transactions, highlights, periodLabel,
   }
 
   return (
+    <>
+    {isOnActivityTab && (
     <section className="activity min-[900px]:px-0.5">
       <form className="report-download" onSubmit={downloadReport}>
         <div className="report-download__intro">
@@ -139,5 +142,7 @@ export function Activity({ walletAddress, transactions, highlights, periodLabel,
         </aside>
       </div>
     </section>
+  )}
+    </>
   )
 }
