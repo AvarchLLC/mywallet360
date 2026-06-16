@@ -99,7 +99,7 @@ export function MetricExplainer({
       aria-label={`Explain ${explanation.title}`}
       onClick={toggle}
     >
-      <Info aria-hidden="true" /><small>Why?</small>
+      <Info aria-hidden="true" />
     </button>
   ))
 
