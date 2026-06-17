@@ -163,6 +163,9 @@ h1, h2, h3 { color: var(--ink); font-weight: 800; letter-spacing: -.035em; }
 .global-search kbd { height: 27px; padding: 0 7px; display: flex; align-items: center; gap: 4px; border: 1px solid rgba(15,23,42,.08); border-radius: 8px; color: #6b7280; background: rgba(255,255,255,.9); box-shadow: 0 1px 2px rgba(15,23,42,.04); font-family: inherit; font-size: 8px; font-weight: 750; white-space: nowrap; }
 .global-search button { height: 32px; padding: 0 12px; border: 0; border-radius: 10px; color: #fff; cursor: pointer; background: linear-gradient(145deg, var(--primary), var(--secondary)); font-size: 10px; font-weight: 800; }
 .global-search button:disabled { cursor: wait; opacity: .62; }
+.global-search .refresh-btn { width: 32px; padding: 0; display: grid; place-items: center; background: transparent; color: var(--muted); }
+.global-search .refresh-btn:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.global-search .refresh-btn:disabled { cursor: wait; opacity: .4; }
 .wallet-search-error { color: #dc2626; font-size: 10px; font-weight: 700; }
 .wallet-resolution { min-width: 0; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 9px; }
 .wallet-resolution span:first-child { padding: 3px 6px; border-radius: 999px; color: #087f73; background: rgba(20,184,166,.1); font-weight: 800; letter-spacing: .05em; }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell, BellRing, CheckCircle2, ChevronDown, Moon, Search, Sun, WalletCards, X } from 'lucide-react'
+import { Bell, BellRing, CheckCircle2, ChevronDown, Moon, RotateCw, Search, Sun, WalletCards, X } from 'lucide-react'
 
 const compactAddress = (address) => `${address.slice(0, 6)}...${address.slice(-4)}`
 
@@ -13,6 +13,8 @@ export function Header({
   onSelectExampleWallet,
   isLoading,
   isResolving,
+  isRefreshing,
+  onRefreshWallet,
   exampleWallets,
   theme,
   onToggleTheme,
@@ -145,6 +147,18 @@ export function Header({
           <button disabled={isSearchBusy} type="submit">
             {isResolving ? 'Resolving...' : isLoading ? 'Analyzing...' : 'Analyze'}
           </button>
+          {wallet && (
+            <button
+              type="button"
+              className="refresh-btn"
+              disabled={isRefreshing}
+              title="Refresh wallet data"
+              aria-label="Refresh wallet data"
+              onClick={onRefreshWallet}
+            >
+              <RotateCw className={`size-4 ${isRefreshing ? 'animate-spin' : ''}`} aria-hidden="true" />
+            </button>
+          )}
         </form>
         {searchError && <span className="wallet-search-error" role="alert">{searchError}</span>}
         {resolvedIdentifier?.type === 'ens' && !searchError && (

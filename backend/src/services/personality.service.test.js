@@ -25,6 +25,8 @@ test("returns the evidence used to calculate wallet personality", () => {
     defiInteractions: 2,
     incomingTransfers: 2,
     currentAssetCount: 4,
+    nftIncoming: 0,
+    nftOutgoing: 0,
   });
   assert.deepEqual(result.rawScores, {
     nftCollector: 4,

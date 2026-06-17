@@ -30,6 +30,8 @@ export function calculatePersonalityDetails({
     (protocolCounts.Uniswap || 0);
   const incomingTransfers = tokenTransfers.filter((transfer) => transfer.direction === "receive").length;
   const outgoingTransfers = tokenTransfers.filter((transfer) => transfer.direction === "send").length;
+  const incomingNftTransfers = nftTransfers.filter((transfer) => transfer.direction === "receive").length;
+  const outgoingNftTransfers = nftTransfers.filter((transfer) => transfer.direction === "send").length;
   const scores = {
     nftCollector: nftTransfers.length * 2,
     trader: swapCount * 3 + outgoingTransfers,
@@ -46,6 +48,8 @@ export function calculatePersonalityDetails({
       defiInteractions,
       incomingTransfers,
       currentAssetCount,
+      nftIncoming: incomingNftTransfers,
+      nftOutgoing: outgoingNftTransfers,
     },
     rawScores: scores,
   };

@@ -9,6 +9,7 @@ export function useWalletDashboard() {
   const [searchValue, setSearchValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isPeriodLoading, setIsPeriodLoading] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [pendingAnalysisDays, setPendingAnalysisDays] = useState(null)
   const [isResolving, setIsResolving] = useState(false)
   const [resolvedIdentifier, setResolvedIdentifier] = useState(null)
@@ -72,6 +73,24 @@ export function useWalletDashboard() {
     setPendingAnalysisDays(days)
     analyzeWallet(wallet.id, days, { periodChange: true, customRange: range })
   }
+
+  const refreshWallet = useCallback(async () => {
+    if (!wallet || isLoadingRef.current) return
+
+    isLoadingRef.current = true
+    setIsRefreshing(true)
+    setError('')
+
+    try {
+      const nextWallet = await walletService.getWalletByAddress(wallet.id, analysisDays, customRange)
+      setWallet(nextWallet)
+    } catch (requestError) {
+      setError(requestError.message)
+    } finally {
+      isLoadingRef.current = false
+      setIsRefreshing(false)
+    }
+  }, [wallet, analysisDays, customRange])
 
   useEffect(() => {
     const addProvider = (provider, info = {}) => {
@@ -175,6 +194,7 @@ export function useWalletDashboard() {
     searchValue,
     isLoading,
     isPeriodLoading,
+    isRefreshing,
     pendingAnalysisDays,
     isResolving,
     analysisDays,
@@ -182,6 +202,7 @@ export function useWalletDashboard() {
     resolvedIdentifier,
     setSearchValue: updateSearchValue,
     searchWallet,
+    refreshWallet,
     selectExampleWallet,
     selectAnalysisPeriod,
     connectedAddress,
