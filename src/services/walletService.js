@@ -68,7 +68,7 @@ const formatRelativeTime = (timestamp) => {
 
 const personalityConfig = {
   nftCollector: { label: 'NFT Collector', icon: '99_918.svg', tone: 'collector' },
-  trader: { label: 'Trader', icon: '99_917.svg', tone: 'trader' },
+  trader: { label: 'Token Trader', icon: '99_917.svg', tone: 'trader' },
   defiExplorer: { label: 'DeFi Explorer', icon: '99_938.svg', tone: 'explorer' },
   holder: { label: 'Holder', icon: '99_959.svg', tone: 'holder' },
 }
@@ -124,9 +124,9 @@ function buildWallet(address, analytics) {
       [`${formatNumber(factors.nftTransfers, 0)} NFT transfers contributed to this score.`],
     ),
     trader: explanation(
-      'Why Trader?',
-      'Trading behavior combines recognized swap calls with outgoing token transfers.',
-      'Trader score = swaps × 3 + outgoing token transfers',
+      'Why Token Trader?',
+      'Swapping behavior combines recognized swap calls with outgoing token transfers.',
+      'Token Trader score = swaps × 3 + outgoing token transfers',
       [`${formatNumber(factors.swapCount, 0)} swaps and ${formatNumber(factors.outgoingTransfers, 0)} outgoing token transfers were found.`],
     ),
     defiExplorer: explanation(
@@ -285,8 +285,8 @@ function buildWallet(address, analytics) {
     },
     flow: {
       periodLabel,
-      received: { value: `+${formatNumber(analytics.moneyFlow.received)} ETH`, percent: receivedPercent },
-      spent: { value: `-${formatNumber(analytics.moneyFlow.spent)} ETH`, percent: spentPercent },
+      received: { value: `+${formatNumber(analytics.moneyFlow.received)} ETH`, usd: analytics.moneyFlow.receivedUsd ? formatUsd(analytics.moneyFlow.receivedUsd) : null, percent: receivedPercent },
+      spent: { value: `-${formatNumber(analytics.moneyFlow.spent)} ETH`, usd: analytics.moneyFlow.spentUsd ? formatUsd(analytics.moneyFlow.spentUsd) : null, percent: spentPercent },
       categories: [
         { label: 'Incoming', value: `${analytics.moneyFlow.incomingCount} txns`, percent: receivedPercent, tone: 'mint', icon: '99_740.svg' },
         { label: 'Outgoing', value: `${analytics.moneyFlow.outgoingCount} txns`, percent: spentPercent, tone: 'red', icon: '99_756.svg' },
@@ -295,14 +295,19 @@ function buildWallet(address, analytics) {
     transactions: buildTransactions(analytics.timeline),
     highlights: [
       { label: 'Largest Holding', value: largestHolding?.symbol || 'None', detail: `${largestHolding?.percentage || 0}%`, icon: 'holding', tone: 'violet' },
-      { label: 'Money Received', value: `${formatNumber(analytics.moneyFlow.received)} ETH`, detail: `${analytics.moneyFlow.incomingCount} transfers`, icon: 'protocol', tone: 'pink' },
-      { label: 'Money Spent', value: `${formatNumber(analytics.moneyFlow.spent)} ETH`, detail: `${analytics.moneyFlow.outgoingCount} transfers`, icon: 'chain', tone: 'blue' },
+      { label: 'Money Received', value: analytics.moneyFlow.receivedUsd ? formatUsd(analytics.moneyFlow.receivedUsd) : `${formatNumber(analytics.moneyFlow.received)} ETH`, detail: `${analytics.moneyFlow.incomingCount} transfers`, icon: 'protocol', tone: 'pink' },
+      { label: 'Money Spent', value: analytics.moneyFlow.spentUsd ? formatUsd(analytics.moneyFlow.spentUsd) : `${formatNumber(analytics.moneyFlow.spent)} ETH`, detail: `${analytics.moneyFlow.outgoingCount} transfers`, icon: 'chain', tone: 'blue' },
       { label: 'Transactions', value: transactionCount, detail: periodLabel.toLowerCase(), icon: 'transactions', tone: 'green' },
     ],
     insights: [
       { label: 'Risk Level', value: analytics.riskScore.level, suffix: `${analytics.riskScore.score}/100`, explanation: riskExplanation },
       { label: 'Recognized Protocol', value: analytics.mostUsedProtocol.name, suffix: `${analytics.mostUsedProtocol.interactionCount} interactions`, explanation: protocolExplanation },
     ],
+    nftBreakdown: {
+      incoming: analytics.personalityFactors?.nftIncoming || 0,
+      outgoing: analytics.personalityFactors?.nftOutgoing || 0,
+      total: analytics.personalityFactors?.nftTransfers || 0,
+    },
   }
 }
 

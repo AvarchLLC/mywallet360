@@ -53,7 +53,7 @@ export function Activity({ walletAddress, transactions, highlights, periodLabel,
   const [isDownloading, setIsDownloading] = useState(false)
   const [reportError, setReportError] = useState('')
   const visibleTransactions = showAll ? transactions : transactions.slice(0, 3)
-  const [isOnActivityTab, setIsOnActivityTab] = useState(false);
+  const isOnActivityTab = false
 
   useEffect(() => {
     setFrom(reportRange.from)

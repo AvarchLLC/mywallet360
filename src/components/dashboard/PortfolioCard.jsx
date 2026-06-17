@@ -3,6 +3,8 @@ import { portfolioIcons } from '../../config/dashboard'
 import { MetricExplainer } from '../common/MetricExplainer'
 
 export function PortfolioCard({ portfolio }) {
+  const scoreLabel = portfolio.score >= 80 ? 'Excellent' : portfolio.score >= 60 ? 'Good' : portfolio.score >= 40 ? 'Fair' : portfolio.score >= 20 ? 'Limited' : 'Minimal'
+
   return (
     <section className="card portfolio-card relative rounded-[28px] border-0 p-8 shadow-[0_20px_50px_rgba(23,70,71,.09)] dark:shadow-[0_20px_50px_rgba(0,0,0,.28)] max-[700px]:p-[18px] max-[360px]:p-3.5">
       <div className="portfolio-card__heading mb-[22px] flex items-center justify-between gap-[18px]">
@@ -32,7 +34,7 @@ export function PortfolioCard({ portfolio }) {
         explanation={portfolio.scoreExplanation}
       >
         <span className="score-bar__icon"><Sparkles aria-hidden="true" /></span>
-        <div className="score-bar__copy"><span>Portfolio Score</span><strong>Excellent</strong></div>
+        <div className="score-bar__copy"><span>Portfolio Score</span><strong>{scoreLabel}</strong></div>
         <strong className="score-bar__value">{portfolio.score}<small>/100</small></strong>
         <div className="score-bar__meter" aria-hidden="true"><i style={{ width: `${portfolio.score}%` }} /></div>
       </MetricExplainer>

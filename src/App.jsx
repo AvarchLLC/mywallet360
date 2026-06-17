@@ -24,6 +24,7 @@ export default function App() {
     searchValue,
     isLoading,
     isPeriodLoading,
+    isRefreshing,
     pendingAnalysisDays,
     isResolving,
     analysisDays,
@@ -31,6 +32,7 @@ export default function App() {
     resolvedIdentifier,
     setSearchValue,
     searchWallet,
+    refreshWallet,
     selectExampleWallet,
     selectAnalysisPeriod,
     connectedAddress,
@@ -54,6 +56,8 @@ export default function App() {
         onSelectExampleWallet={selectExampleWallet}
         isLoading={isLoading}
         isResolving={isResolving}
+        isRefreshing={isRefreshing}
+        onRefreshWallet={refreshWallet}
         exampleWallets={exampleWallets}
         theme={theme}
         onToggleTheme={toggleTheme}

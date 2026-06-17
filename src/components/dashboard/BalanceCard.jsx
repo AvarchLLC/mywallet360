@@ -70,6 +70,7 @@ export function BalanceCard({ balance, periods, selectedDays, customRange, pendi
           className="balance-rank-chip flex min-w-[150px] cursor-pointer items-center gap-2 rounded-2xl border-0 px-3 py-2.5 text-left text-white transition hover:bg-[rgba(3,105,103,.34)] disabled:cursor-wait disabled:opacity-70"
           type="button"
           disabled={isLoading}
+          aria-label="Select analysis period"
           aria-expanded={isMenuOpen}
           aria-haspopup="menu"
           onClick={() => setIsMenuOpen((open) => !open)}
