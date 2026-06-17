@@ -92,6 +92,9 @@ export default function App() {
               </div>
               <PortfolioHoldings
                 holdings={wallet.holdings}
+                totalValue={wallet.balance?.value}
+                valuationHistory={wallet.balance?.history}
+                periodLabel={wallet.periodLabel}
                 isLoading={isLoading}
               />
               <Summary flow={wallet.flow} />
