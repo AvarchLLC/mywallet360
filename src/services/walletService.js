@@ -311,6 +311,18 @@ function buildWallet(address, analytics) {
       outgoing: analytics.personalityFactors?.nftOutgoing || 0,
       total: analytics.personalityFactors?.nftTransfers || 0,
     },
+    holdings: (() => {
+      const rawAssets = analytics.assets || []
+      const totalRaw = rawAssets.reduce((sum, a) => sum + a.usdValue, 0)
+      return rawAssets.map((asset) => ({
+        ...asset,
+        rawBalance: asset.balance,
+        rawUsdValue: asset.usdValue,
+        balance: formatNumber(asset.balance),
+        usdValue: formatUsd(asset.usdValue),
+        percentage: totalRaw > 0 ? Math.round((asset.usdValue / totalRaw) * 100) : 0,
+      }))
+    })(),
   }
 }
 
