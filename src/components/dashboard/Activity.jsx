@@ -90,7 +90,7 @@ export function Activity({ walletAddress, transactions, highlights, periodLabel,
           <div>
             <span className="report-download__eyebrow">Excel statement</span>
             <strong>Download transaction report</strong>
-            <p>Get a clean statement plus raw BlockAction data for your selected date range.</p>
+            <p>Get a clean statement plus raw BlobLens data for your selected date range.</p>
             <div className="report-download__tags" aria-label="Included transaction types">
               <span>Normal</span><span>Internal</span><span>ERC-20</span>
             </div>

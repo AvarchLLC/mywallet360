@@ -152,9 +152,16 @@ function buildWallet(address, analytics) {
   const flowTotal = analytics.moneyFlow.received + analytics.moneyFlow.spent
   const receivedPercent = flowTotal ? Math.round((analytics.moneyFlow.received / flowTotal) * 100) : 0
   const spentPercent = flowTotal ? 100 - receivedPercent : 0
-  const activityLevel = analytics.transactionCount > 500 ? 'Very High' : analytics.transactionCount > 100 ? 'High' : 'Moderate'
+  const days = analytics.period?.days || 1
+  const density = analytics.transactionCount / days
+  const activityLevel = density > 1.5 ? 'Very High' : density > 0.3 ? 'High' : 'Moderate'
   const transactionCount = formatCount(analytics.transactionCount, analytics.analysisWindow?.normalTransactionsComplete)
-  const portfolioScore = Math.min(99, Math.round(50 + Math.log10(analytics.netWorth + 1) * 12))
+  const pricedCount = analytics.valuation?.pricedAssetCount || 0
+  const wealthScore = Math.min(40, Math.max(0, Math.round(Math.log10(Math.max(1, analytics.netWorth)) * 6)))
+  const diversityScore = pricedCount >= 10 ? 25 : pricedCount >= 5 ? 20 : pricedCount >= 3 ? 15 : pricedCount >= 1 ? 8 : 0
+  const activityComponentScore = density > 1.5 ? 15 : density > 0.3 ? 10 : density > 0.05 ? 5 : 0
+  const riskBonus = analytics.riskScore.level === 'Low' ? 20 : analytics.riskScore.level === 'Moderate' ? 10 : 0
+  const portfolioScore = Math.min(99, wealthScore + diversityScore + activityComponentScore + riskBonus)
   const largestHolding = analytics.largestHolding
   const valuationHistory = analytics.valuationHistory?.length
     ? analytics.valuationHistory
@@ -204,22 +211,22 @@ function buildWallet(address, analytics) {
         ...point,
         formattedValue: formatUsd(point.value),
       })),
-      valuationLabel: `BlockAction estimated priced assets${analytics.valuation.complete === false ? ' (partial)' : ''}`,
+      valuationLabel: `BlobLens estimated priced assets${analytics.valuation.complete === false ? ' (partial)' : ''}`,
       growth: periodLabel,
       rank: `${transactionCount} txns`,
       explanation: explanation(
         'How period-estimated assets are calculated',
-        'This sums ETH and supported token balances estimated from BlockAction data for the selected period.',
+        'This sums ETH and supported token balances estimated from BlobLens data for the selected period.',
         'Estimated priced assets = Σ(estimated token balance × supported USD price)',
         [
           `${analytics.valuation?.pricedAssetCount || 0} of ${analytics.valuation?.totalAssetCount || 0} discovered assets had prices.`,
-          'Source: BlockAction (BlobLens) balances, prices, and transfer history.',
+          'Source: BlobLens (BlobLens) balances, prices, and transfer history.',
           analytics.valuation?.complete === false ? 'Token-transfer history hit the page cap, so this estimate is partial.' : 'Token-transfer pagination completed for the selected period.',
         ],
       ),
       stats: [
         { label: 'Transactions', value: transactionCount, icon: 'rank' },
-        { label: 'Activity', value: activityLevel, icon: 'activity', explanation: explanation('Activity level', 'A simple label based on transaction count in the selected period.', 'Very High: >500 · High: >100 · Moderate: ≤100', [`This wallet has ${transactionCount} transactions in the selected period.`]) },
+        { label: 'Activity', value: activityLevel, icon: 'activity', explanation: explanation('Activity level', 'A label based on per-day transaction density in the selected period.', `Very High: >1.5/day · High: >0.3/day · Moderate: ≤0.3/day`, [`This wallet has ${transactionCount} transactions across ${days} day(s).`]) },
         { label: 'NFT Activity', value: analytics.personalityFactors?.nftTransfers?.toLocaleString() || '0', icon: 'risk' },
         {
           label: 'Network',
@@ -233,7 +240,7 @@ function buildWallet(address, analytics) {
     portfolio: {
       status: analytics.netWorth > 0 ? 'Active' : 'Empty',
       score: portfolioScore,
-      scoreExplanation: explanation('Portfolio Score', 'A presentation score based on the logarithm of the selected period asset estimate.', 'min(99, round(50 + log10(estimated priced assets + 1) × 12))', [`Current score: ${portfolioScore}/100.`]),
+      scoreExplanation: explanation('Portfolio Score', 'A composite score based on wealth, diversification, activity, and risk.', 'Wealth(≤40) + Diversity(≤25) + Activity(≤15) + Risk(≤20), capped at 99', [`Current score: ${portfolioScore}/100. Wealth: ${wealthScore}/40, Diversity: ${diversityScore}/25, Activity: ${activityComponentScore}/15, Risk: ${riskBonus}/20.`]),
       metrics: [
         {
           label: 'Largest Holding',
@@ -278,7 +285,7 @@ function buildWallet(address, analytics) {
       { label: 'Portfolio Score', value: `${portfolioScore}/100`, description: 'Based on the selected period asset estimate', icon: 'portfolio', tone: 'gold' },
       { label: 'Transactions', value: transactionCount, description: `Activity during ${periodLabel.toLowerCase()}`, icon: 'risk', tone: 'blue' },
       { label: 'NFT Activity', value: analytics.personalityFactors?.nftTransfers?.toLocaleString() || '0', description: `Transfers during ${periodLabel.toLowerCase()}`, icon: 'age', tone: 'purple' },
-      { label: 'Data Source', value: 'BlockAction', description: analytics.valuation.complete ? 'Transfer scan completed' : 'Partial transfer scan', icon: 'kyc', tone: 'green' },
+      { label: 'Data Source', value: 'BlobLens', description: analytics.valuation.complete ? 'Transfer scan completed' : 'Partial transfer scan', icon: 'kyc', tone: 'green' },
     ],
     personality: {
       title: primaryPersonality?.label || 'New Wallet',

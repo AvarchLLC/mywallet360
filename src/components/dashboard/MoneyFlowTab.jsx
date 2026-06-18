@@ -155,7 +155,7 @@ export function MoneyFlowTab({ wallet }) {
               'Received: Total value of all incoming ETH transfers to your wallet.',
               'Spent: Total value of all outgoing ETH transfers including contract interactions.',
               'Positive Net Growth means you received more than you spent.',
-              'Values are in ETH based on raw on-chain transaction data from BlockAction.',
+              'Values are in ETH based on raw on-chain transaction data from BlobLens.',
             ],
           }}
         >
@@ -203,7 +203,7 @@ export function MoneyFlowTab({ wallet }) {
             formula: 'Estimated Value = Σ(estimated token balance × supported USD price) for all priced assets',
             details: [
               `Current estimate: ${balance.value}`,
-              'Combines ETH and supported token balances estimated from on-chain BlockAction data.',
+              'Combines ETH and supported token balances estimated from on-chain BlobLens data.',
               'The Health Score is derived from the logarithm of your estimated portfolio value: min(99, round(50 + log10(value + 1) × 12)).',
               'Only assets with available price feeds are included. If an asset lacks a price, it is excluded from the total.',
             ],
