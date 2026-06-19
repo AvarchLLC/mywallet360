@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Activity } from './components/dashboard/Activity'
 import { BalanceCard } from './components/dashboard/BalanceCard'
+import { DashboardBar } from './components/dashboard/DashboardBar'
 import { DashboardLoader } from './components/dashboard/DashboardLoader'
 import { IdentityCard } from './components/dashboard/IdentityCard'
 import { Insights } from './components/dashboard/Insights'
@@ -19,6 +20,7 @@ const exampleWallets = walletService.listExampleWallets()
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('Overview')
+  const [displayMode, setDisplayMode] = useState('usd')
   const {
     wallet,
     error,
@@ -75,16 +77,20 @@ export default function App() {
           {activeTab === 'Overview' ? (
             <main className={`grid gap-9 max-[700px]:gap-6 ${isLoading ? 'dashboard-loading' : 'dashboard-ready'}`} key={wallet.id}>
               {isLoading && <DashboardLoader />}
+              <DashboardBar
+                periods={ANALYSIS_PERIODS}
+                selectedDays={analysisDays}
+                customRange={customRange}
+                pendingDays={pendingAnalysisDays}
+                isLoading={isPeriodLoading}
+                onPeriodChange={selectAnalysisPeriod}
+                displayMode={displayMode}
+                onDisplayModeChange={setDisplayMode}
+              />
               <div className="dashboard-grid dashboard-grid--top grid gap-6 min-[900px]:grid-cols-2 min-[1180px]:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
                 <BalanceCard
                   balance={wallet.balance}
-                  periods={ANALYSIS_PERIODS}
-                  selectedDays={analysisDays}
-                  customRange={customRange}
-                  pendingDays={pendingAnalysisDays}
-                  isLoading={isPeriodLoading}
                   error={error}
-                  onPeriodChange={selectAnalysisPeriod}
                 />
                 <PortfolioCard portfolio={wallet.portfolio} />
                 <IdentityCard stats={wallet.identity} />
@@ -96,6 +102,7 @@ export default function App() {
                 valuationHistory={wallet.balance?.history}
                 periodLabel={wallet.periodLabel}
                 isLoading={isLoading}
+                displayMode={displayMode}
               />
               <Summary flow={wallet.flow} />
               <Activity

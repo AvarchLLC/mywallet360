@@ -125,7 +125,7 @@ function renderActiveShape(props) {
   )
 }
 
-export function PortfolioHoldings({ holdings, totalValue, valuationHistory, periodLabel, isLoading }) {
+export function PortfolioHoldings({ holdings, totalValue, valuationHistory, periodLabel, isLoading, displayMode }) {
   const [hoveredSymbol, setHoveredSymbol] = useState(null)
   const [hoveredLegend, setHoveredLegend] = useState(null)
 
@@ -354,7 +354,7 @@ export function PortfolioHoldings({ holdings, totalValue, valuationHistory, peri
           <div className="holdings-list-header">
             <span>Asset</span>
             <span>Balance</span>
-            <span>Value</span>
+            <span>{displayMode === 'tokens' ? 'Amount' : 'Value'}</span>
             <span>Allocation</span>
           </div>
           <div className="holdings-list">
@@ -375,7 +375,7 @@ export function PortfolioHoldings({ holdings, totalValue, valuationHistory, peri
                     </div>
                   </div>
                   <span className="holdings-row-balance">{asset.balance}</span>
-                  <strong className="holdings-row-value">{asset.usdValue}</strong>
+                  <strong className="holdings-row-value">{displayMode === 'tokens' ? `${asset.rawBalance} ${asset.symbol}` : asset.usdValue}</strong>
                   <div className="holdings-row-allocation">
                     <AllocationBar percent={asset.percentage} highlight={isHighlighted} />
                     <span className="holdings-row-pct">{asset.percentage}%</span>
