@@ -6,14 +6,12 @@ import { DashboardBar } from './components/dashboard/DashboardBar'
 import { DashboardLoader } from './components/dashboard/DashboardLoader'
 import { Insights } from './components/dashboard/Insights'
 import { MoneyFlowTab } from './components/dashboard/MoneyFlowTab'
-import { PortfolioChart } from './components/dashboard/PortfolioChart'
-import { PortfolioHoldings } from './components/dashboard/PortfolioHoldings'
+import { PortfolioTab } from './components/dashboard/PortfolioTab'
 import { TransactionHeatmap } from './components/dashboard/TransactionHeatmap'
 import { TransactionsExplorer } from './components/dashboard/TransactionsExplorer'
 import { TransactionAnalytics } from './components/dashboard/TransactionAnalytics'
 import { WalletHealth } from './components/dashboard/WalletHealth'
 import { WalletPersonality } from './components/dashboard/WalletPersonality'
-import { LandingPreview } from './components/landing/LandingPreview'
 import { BottomNav } from './components/layout/BottomNav'
 import { Header } from './components/layout/Header'
 import { useTheme } from './hooks/useTheme'
@@ -155,22 +153,14 @@ export default function App() {
           )}
 
           {activeTab === 'Portfolio' && (
-            <main className={`grid gap-9 max-[700px]:gap-6 ${isLoading ? 'dashboard-loading' : 'dashboard-ready'}`} key={`portfolio-${wallet.id}`}>
+            <main className={`${isLoading ? 'dashboard-loading' : 'dashboard-ready'}`} key={`portfolio-${wallet.id}`}>
               {isLoading && <DashboardLoader />}
-              <DashboardBar
+              <PortfolioTab
+                wallet={wallet}
                 displayMode={displayMode}
                 onDisplayModeChange={setDisplayMode}
-              />
-              <PortfolioHoldings
-                holdings={wallet.holdings}
-                valuationHistory={wallet.balance?.history}
                 isLoading={isLoading}
-                displayMode={displayMode}
                 ethPrice={wallet.ethPrice}
-                wallet={wallet}
-              />
-              <PortfolioChart
-                valuationHistory={wallet.valuationHistory}
               />
             </main>
           )}
@@ -187,14 +177,12 @@ export default function App() {
           <BottomNav active={activeTab} onChange={setActiveTab} />
         </>
       ) : (
-        <>
+        <main className="wallet-empty-state grid min-h-[58vh] place-content-center justify-items-center gap-3 rounded-[28px] border border-dashed border-[rgba(44,122,123,.2)] bg-white/55 px-6 py-12 text-center dark:border-[var(--border)] dark:bg-[rgba(17,24,39,.55)]">
           {isLoading && <DashboardLoader />}
-          <LandingPreview
-            exampleWallets={exampleWallets}
-            onSelectExample={selectExampleWallet}
-            isLoading={isLoading}
-          />
-        </>
+          <span>Wallet analytics</span>
+          <h2>Enter a wallet address or ENS name</h2>
+          <p>Search an Ethereum address or .eth name to load its on-chain analytics.</p>
+        </main>
       )}
     </div>
   )
